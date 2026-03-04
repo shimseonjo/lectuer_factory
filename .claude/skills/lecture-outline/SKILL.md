@@ -1,6 +1,6 @@
 ---
 name: lecture-outline
-description: 강의구성안 생성 - 6단계 파이프라인 (입력수집 → 브레인스토밍 → 리서치 → 아키텍처 → 작성 → 검토)
+description: 강의구성안 생성 - 7단계 파이프라인 (입력수집 → 탐색리서치 → 브레인스토밍 → 심화리서치 → 아키텍처 → 작성 → 검토)
 context: fork
 allowed-tools: Agent, Read, Write, Glob, Grep, WebSearch, WebFetch, AskUserQuestion
 ---
@@ -13,11 +13,12 @@ allowed-tools: Agent, Read, Write, Glob, Grep, WebSearch, WebFetch, AskUserQuest
 
 $ARGUMENTS
 
-## 파이프라인 (6단계)
+## 파이프라인 (7단계, 2-Pass Research)
 
 ### Phase 1: 입력 수집 → input-agent
-### Phase 2: 브레인스토밍 → brainstorm-agent
-### Phase 3: 인터넷 리서치 → research-agent
-### Phase 4: 아키텍처 설계 → architecture-agent
-### Phase 5: 구성안 작성 → writer-agent
-### Phase 6: 품질 검토 → review-agent
+### Phase 2: 탐색적 리서치 → research-agent (문제 공간 이해, 트렌드, 유사 강의 현황)
+### Phase 3: 브레인스토밍 → brainstorm-agent (리서치 기반 informed brainstorming)
+### Phase 4: 심화 리서치 → research-agent (브레인스토밍 결과 검증, 사례·참고문헌 수집)
+### Phase 5: 아키텍처 설계 → architecture-agent
+### Phase 6: 구성안 작성 → writer-agent
+### Phase 7: 품질 검토 → review-agent

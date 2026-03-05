@@ -91,7 +91,7 @@ Step 0: 입력 로드 + 리서치 계획 수립
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `reference_sources.local_folders` (폴더 경로 배열) |
+| 입력 | `{output_dir}/input_data.json` → `reference_sources.local_folders` (폴더 경로 배열) |
 | 도구 | Glob, Read, Bash |
 | 산출물 | `{output_dir}/local_findings.md` |
 | 조건 | `local_folders`가 빈 배열이면 **건너뜀** |
@@ -135,7 +135,7 @@ for i, slide in enumerate(prs.slides, 1):
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `reference_sources.notebooklm_urls` (URL 배열) |
+| 입력 | `{output_dir}/input_data.json` → `reference_sources.notebooklm_urls` (URL 배열) |
 | 도구 | Bash (NBLM 스킬 CLI) |
 | 산출물 | `{output_dir}/nblm_findings.md` |
 | 조건 | `notebooklm_urls`가 빈 배열이면 **건너뜀** |

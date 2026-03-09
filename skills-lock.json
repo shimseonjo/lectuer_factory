@@ -1,6 +1,21 @@
 {
   "version": 1,
   "skills": {
+    "deep-research": {
+      "source": "199-biotechnologies/claude-deep-research-skill",
+      "sourceType": "github",
+      "computedHash": "612fcc6704d615d422cf3e5abc8fa2f02373b882174c83d5ca4338eae59c8720"
+    },
+    "multi-agent-brainstorming": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "f9bf20c30cb024116996fccd00e08fdd0bdc43dcd1fde78f45bd215950ff1ab4"
+    },
+    "scientific-brainstorming": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "141ebf6201b16050c278213306f9393649faca52b7bbac2f5adca9ffbb51e0ef"
+    },
     "web-research": {
       "source": "langchain-ai/deepagents",
       "sourceType": "github",

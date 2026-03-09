@@ -386,7 +386,7 @@ input_data  기준   기준
 | **입력** | input_data.json | brainstorm_result.md §8 |
 | **고착 필터** | 강함 (구체적 목차 금지) | 완화 (구체적 사례·문헌 허용, 타강의 목차는 금지) |
 | **검증 수준** | 신뢰도 태그 | deep-research Triangulation + Critique |
-| **검색 예산** | 웹 15회, NBLM 5회 | 웹 20~25회, NBLM 2~3회(보완) |
+| **검색 예산** | 웹 15회, NBLM 5회 | 웹 20~25회, NBLM 노트북당 3~5회, 로컬 재분석 필수 |
 | **산출물 성격** | 방향성 인사이트 (5~10개) | 검증된 사례·문헌·보충자료 (narrative 보고서) |
 | **쓰기 표준** | 구조화된 마크다운 | deep-research narrative-driven 산문 |
 
@@ -411,7 +411,7 @@ Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
 ```
 {output_dir}/
 ├── deep_research_plan.md    # Step 0: 심화 리서치 계획 (Scope+Plan)
-├── deep_local_nblm.md       # Step 1: 로컬/NBLM 심화 (선택적 생성)
+├── deep_local_nblm.md       # Step 1: 로컬/NBLM 심화 재분석
 ├── web_deep_findings.md     # Step 1: 웹 심화 수집 결과
 └── research_deep.md         # Step 4: 심화 리서치 최종 산출물 ★
 ```
@@ -446,7 +446,16 @@ Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
      - "사례/문헌이 필요한 주제" → 사례 검색 쿼리
      - "추가 탐색 방향" → 탐색 쿼리
      - "구체적 검색 키워드" → 직접 활용
-   - 검색 예산 배정 (Standard 모드 기준):
+   - 리서치 예산 배정 (Standard 모드 기준):
+
+     **로컬/NBLM (Step 1-1, 1-2)**:
+
+     | 소스 | 예산 | 전략 |
+     |------|------|------|
+     | 로컬 참고자료 | §8 관련 파일 선택적 재읽기 | brainstorm 관점으로 원본 심화 분석 |
+     | NotebookLM | 노트북당 3~5쿼리 | §8 기반 새 질문 생성 → 심화 질의 |
+
+     **웹 검색 (Step 1-3)**:
 
      | 카테고리 | 예산 | 검색 전략 |
      |---------|------|----------|
@@ -454,8 +463,9 @@ Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
      | 핵심(Must) 주제 사례 | 6~8회 | "{주제} case study/실습/tutorial" |
      | 학술 문헌 | 4~6회 | "{키워드} research paper 2024 2025" |
      | 보충 콘텐츠 | 4~6회 | "{키워드} worksheet/exercise/example" |
-     | **총계** | **20~25회** | |
+     | **웹 총계** | **20~25회** | |
 
+   - 수행 순서: **로컬 → NBLM → 웹** (로컬/NBLM 결과가 웹 검색 방향을 보완)
    - 우선순위: 핵심(Must) 주제 > 가정 검증 > 중요(Should) 주제
 
 3. `deep_research_plan.md` 작성
@@ -466,20 +476,134 @@ Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `deep_research_plan.md`, `input_data.json` |
+| 입력 | `deep_research_plan.md`, `input_data.json`, `brainstorm_result.md` §8 |
 | 참조 | `.claude/skills/deep-research/SKILL.md` Phase 3 |
-| 도구 | Read, Bash(NBLM), WebSearch, WebFetch, Write |
-| 산출물 | `{output_dir}/deep_local_nblm.md`(선택), `{output_dir}/web_deep_findings.md` |
-| 제약 | 웹 검색 20~25회, NBLM 추가 2~3회 |
+| 도구 | Read, Glob, Bash(NBLM), WebSearch, WebFetch, Write |
+| 산출물 | `{output_dir}/deep_local_nblm.md`, `{output_dir}/web_deep_findings.md` |
+| 제약 | 웹 검색 20~25회, NBLM 노트북당 3~5쿼리 |
 
-#### 1-1. 로컬/NBLM 심화 (선택)
+#### 1-1. 로컬 참고자료 심화 재분석 (필수)
 
-- **조건**: brainstorm §8에서 "기존 참고자료에서 추가 확인 필요" 항목이 있을 때만 실행
-- Phase 2에서 사용한 로컬 파일 재참조 (특정 섹션 심화 읽기)
-- NBLM 추가 쿼리 (예산: 노트북당 2~3회, Phase 2 잔여 예산 활용)
-- 산출물: `deep_local_nblm.md` (선택적 생성)
+> Phase 2에서 생성한 `local_findings.md`를 **재사용하지 않는다**. brainstorm 결과(§8)의 관점에서 원본 파일을 새로 읽고 분석한다.
 
-#### 1-2. 웹 심화 리서치 — deep-research RETRIEVE 적용
+| 항목 | 내용 |
+|------|------|
+| 입력 | `input_data.json` → `reference_sources.local_folders`, `brainstorm_result.md` §8 |
+| 도구 | Glob, Read, Bash |
+| 산출물 | `deep_local_nblm.md` 전반부 (로컬 섹션) |
+| 조건 | `local_folders`가 빈 배열이면 **로컬 섹션 건너뜀** (NBLM은 독립 실행) |
+
+**동작**:
+
+1. `brainstorm_result.md` §8에서 **심화 분석 관점** 추출:
+   - "검증이 필요한 가정" → 로컬 자료에서 검증할 포인트
+   - "사례/문헌이 필요한 주제" → 로컬 자료에서 해당 섹션 집중 탐색
+   - "추가 탐색 방향" → 로컬 자료에서 관련 내용 재탐색
+
+2. Phase 2 `local_findings.md`를 **인덱스로만** 참조:
+   - 어떤 파일이 분석되었는지 확인 (파일 목록)
+   - Phase 2에서 요약된 내용은 읽지 않음 (고착 효과 방지)
+
+3. §8 관점으로 원본 파일 **선택적 심화 읽기**:
+   - §8의 주제/가정과 직접 관련된 파일만 선별
+   - Phase 2에서 건너뛴 파일도 §8 기준으로 재평가
+   - 파일 전체가 아닌 **관련 섹션만 집중 읽기** (Ctrl+F 방식)
+
+4. 확장자별 읽기 전략 (Phase 2와 동일):
+
+   | 확장자 | 읽기 방법 |
+   |--------|----------|
+   | `.md` `.txt` | Read 도구 직접 읽기 |
+   | `.pdf` (≤20p) | `Read(pages="관련페이지")` — 목차에서 관련 섹션 특정 |
+   | `.pdf` (>20p) | `Bash: pdftotext` → 키워드 검색으로 관련 부분 추출 |
+   | `.pptx` | `Bash: python3 -c "..."` (Phase 2 인라인 스크립트 동일) |
+   | `.docx` | `Bash: pandoc {file} -t plain` |
+
+5. 파일별 심화 분석 결과 작성:
+   - §8 관점과의 관련성 명시
+   - 가정 검증에 활용 가능한 근거 추출
+   - 사례/문헌으로 활용 가능한 내용 추출
+   - 모든 팩트에 `[L-N]` (Local 인용번호) 부여
+
+#### 1-2. NotebookLM 심화 재분석 (필수)
+
+> Phase 2에서 생성한 `nblm_findings.md`를 **재사용하지 않는다**. brainstorm 결과(§8)를 기반으로 새로운 질문을 생성하여 NBLM에 질의한다.
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | `input_data.json` → `reference_sources.notebooklm_urls`, `brainstorm_result.md` §8 |
+| 도구 | Bash (NBLM 스킬 CLI) |
+| 산출물 | `deep_local_nblm.md` 후반부 (NBLM 섹션) |
+| 조건 | `notebooklm_urls`가 빈 배열이면 **NBLM 섹션 건너뜀** (로컬은 독립 실행) |
+| 제약 | 노트북당 최대 3~5쿼리 |
+
+**NBLM 호출 인터페이스** (Phase 2와 동일):
+
+```bash
+# 1. 노트북 활성화
+python3 .claude/skills/nblm/scripts/run.py nblm_cli.py activate {url}
+
+# 2. 질문
+python3 .claude/skills/nblm/scripts/run.py ask_question.py --question "{질문}"
+```
+
+**§8 기반 질문 생성 전략**:
+
+`brainstorm_result.md` §8의 항목을 NBLM 질문으로 변환:
+
+1. **가정 검증 질문**: "이 자료에서 '{가정 내용}'을 뒷받침하거나 반박하는 근거가 있는가?"
+2. **사례 탐색 질문**: "이 자료에서 {주제}의 실제 적용 사례나 실습 예시가 있는가?"
+3. **문헌 심화 질문**: "이 자료에서 {키워드}에 대한 심층 분석이나 연구 결과가 있는가?"
+4. **보충 콘텐츠 질문**: "이 자료에서 {주제} 관련 활동지, 실습 자료, 평가 기준 등이 있는가?"
+5. **추가 방향 질문**: "이 자료에서 {탐색 방향}과 관련된 내용이나 참고할 만한 관점이 있는가?"
+
+**후속 질문 프로토콜** (Phase 2와 동일):
+- NBLM 응답에서 정보 충분성 판단
+- 부족하면 추가 쿼리 실행 (쿼리 예산 내)
+- 충분하면 다음 노트북 또는 다음 단계로 진행
+
+**동작**:
+
+1. §8에서 NBLM으로 확인할 항목 목록 작성
+2. 각 노트북별 관련 질문 매핑 (모든 질문을 모든 노트북에 보내지 않음)
+3. 노트북 활성화 → 질문 순차 실행
+4. 모든 NBLM 팩트에 `[NB-N]` (NBLM 인용번호) 부여
+
+#### deep_local_nblm.md 산출물 구조
+
+```markdown
+# Phase 4 로컬/NBLM 심화 재분석 결과
+
+## 분석 관점 (brainstorm §8 기반)
+- 검증 대상 가정: {목록}
+- 사례/문헌 필요 주제: {목록}
+- 추가 탐색 방향: {목록}
+
+## 로컬 참고자료 심화 분석
+### {파일명 1}
+- §8 관련성: {어떤 항목과 관련되는지}
+- 핵심 발견: {내용} [L-1]
+- 강의 활용 포인트: {내용}
+
+### {파일명 2}
+(동일 구조)
+
+## NotebookLM 심화 분석
+### {노트북명 1}
+- 질의 항목: {§8의 어떤 항목을 확인했는지}
+- Q: {질문} → A: {핵심 답변 요약} [NB-1]
+- 강의 활용 포인트: {내용}
+
+### {노트북명 2}
+(동일 구조)
+
+## 로컬/NBLM 소스 통합 요약
+- 가정 검증에 기여하는 발견: {N}건
+- 사례/문헌으로 활용 가능한 발견: {N}건
+- 웹 리서치로 보완이 필요한 항목: {목록}
+```
+
+#### 1-3. 웹 심화 리서치 — deep-research RETRIEVE 적용
 
 deep-research 원칙: "검색 전에 쿼리를 5~10개 독립 각도로 분해"
 
@@ -516,14 +640,16 @@ FACTS(팩트)와 SYNTHESIS(분석)을 명확히 구분:
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `web_deep_findings.md`, `deep_local_nblm.md`(있을 경우), `research_exploration.md` |
+| 입력 | `deep_local_nblm.md`, `web_deep_findings.md`, `research_exploration.md` |
 | 참조 | `.claude/skills/deep-research/SKILL.md` Phase 4, 4.5 |
 | 도구 | Read, Write |
 | 산출물 | 내부 검증 결과 (Step 3에서 통합) |
 
-#### 2-1. Triangulation — deep-research Phase 4 적용
+> **3소스 통합**: 로컬(`[L-N]`), NBLM(`[NB-N]`), 웹(`[N]`) 세 가지 소스를 모두 교차검증에 포함한다.
 
-주요 주장별 교차검증:
+#### 2-1. Triangulation — deep-research Phase 4 적용 (3소스 통합)
+
+주요 주장별 **3소스(로컬 + NBLM + 웹)** 교차검증:
 
 | 소스 수 | 태그 | 처리 |
 |---------|------|------|

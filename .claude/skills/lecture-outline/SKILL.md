@@ -25,6 +25,7 @@ $ARGUMENTS
 **제약**: 총 웹 검색 15회 이내, NBLM 쿼리 노트북당 5회 이내
 **워크플로우**: Step 0(계획) → Step 1(로컬) → Step 2(NBLM) → Step 3(웹) → Step 4(통합)
 **상세**: `.claude/agents/research-agent/AGENT.md`의 "강의구성안 탐색적 리서치" 섹션 참조
+
 ### Phase 3: 브레인스토밍 → brainstorm-agent
 
 **지시**: 탐색적 리서치 결과를 기반으로 발산-수렴-검증 브레인스토밍을 수행하세요.
@@ -32,16 +33,19 @@ $ARGUMENTS
 **산출물 위치**: `{output_dir}/` (brainstorm_divergent.md, brainstorm_convergent.md, brainstorm_review.md, brainstorm_result.md)
 **워크플로우**: Step 0(맥락분석) → Step 1(발산) → Step 2(수렴·매핑) → Step 3(다관점검증) → Step 4(통합)
 **상세**: `.claude/agents/brainstorm-agent/AGENT.md`의 "강의구성안 브레인스토밍" 섹션 참조
+
 ### Phase 4: 심화 리서치 → research-agent
 
 **지시**: 브레인스토밍 결과를 기반으로 deep-research 방법론에 따라 심화 리서치를 수행하세요.
 **입력 파일**: `{output_dir}/brainstorm_result.md`, `{output_dir}/input_data.json`, `{output_dir}/research_exploration.md`
 **방법론 참조**: `.claude/skills/deep-research/SKILL.md` (8단계 파이프라인)
-**산출물 위치**: `{output_dir}/` (deep_research_plan.md, deep_local_nblm.md(선택), web_deep_findings.md, research_deep.md)
+**산출물 위치**: `{output_dir}/` (deep_research_plan.md, deep_local_nblm.md, web_deep_findings.md, research_deep.md)
 **모드**: Standard (기본, 15~30 소스) — 사용자 요청 시 Deep 전환 가능
-**제약**: 총 웹 검색 20~25회 이내, NBLM 추가 쿼리 2~3회 이내
-**워크플로우**: Step 0(Scope+Plan) → Step 1(Retrieve) → Step 2(Triangulate+Refine) → Step 3(Synthesize+Critique) → Step 4(Package)
+**제약**: 총 웹 검색 20~25회 이내, NBLM 노트북당 3~5쿼리
+**워크플로우**: Step 0(Scope+Plan) → Step 1(로컬 재분석 → NBLM 재분석 → 웹 수집) → Step 2(3소스 삼각측량+Refine) → Step 3(Synthesize+Critique) → Step 4(Package)
+**3소스 통합**: 로컬/NBLM/웹 세 가지 소스를 필수로 수집하고 삼각측량에서 교차검증
 **상세**: `.claude/agents/research-agent/AGENT.md`의 "강의구성안 심화 리서치" 섹션 참조
+
 ### Phase 5: 아키텍처 설계 → architecture-agent
 ### Phase 6: 구성안 작성 → writer-agent
 ### Phase 7: 품질 검토 → review-agent
@@ -61,7 +65,7 @@ lectures/YYYY-MM-DD_{강의명}/01_outline/
 ├── brainstorm_review.md        # Phase 3: 다관점 검증 (중간)
 ├── brainstorm_result.md        # Phase 3: 브레인스토밍 최종 ★
 ├── deep_research_plan.md       # Phase 4: 심화 리서치 계획 (Scope+Plan)
-├── deep_local_nblm.md          # Phase 4: 로컬/NBLM 심화 (선택)
+├── deep_local_nblm.md          # Phase 4: 로컬/NBLM 심화 재분석
 ├── web_deep_findings.md        # Phase 4: 웹 심화 수집 (Retrieve)
 ├── research_deep.md             # Phase 4: 심화 리서치 최종 ★
 ├── architecture.md              # Phase 5: 아키텍처 설계

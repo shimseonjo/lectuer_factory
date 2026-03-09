@@ -373,9 +373,314 @@ input_data  기준   기준
 
 ---
 
+## 강의구성안 심화 리서치 (Phase 4) 세부 워크플로우
+
+> **방법론 참조**: `.claude/skills/deep-research/SKILL.md` — 8단계 파이프라인을 강의 설계 맥락에 적용
+
+### Phase 2(탐색적)와 Phase 4(심화) 비교
+
+| 구분 | Phase 2 탐색적 | Phase 4 심화 |
+|------|--------------|------------|
+| **방법론** | web-research 패턴 (4자료원 통합) | deep-research 8단계 파이프라인 |
+| **목적** | 문제 공간 이해, 방향 설정 | 아이디어 검증, 자료 보강 |
+| **입력** | input_data.json | brainstorm_result.md §8 |
+| **고착 필터** | 강함 (구체적 목차 금지) | 완화 (구체적 사례·문헌 허용, 타강의 목차는 금지) |
+| **검증 수준** | 신뢰도 태그 | deep-research Triangulation + Critique |
+| **검색 예산** | 웹 15회, NBLM 5회 | 웹 20~25회, NBLM 2~3회(보완) |
+| **산출물 성격** | 방향성 인사이트 (5~10개) | 검증된 사례·문헌·보충자료 (narrative 보고서) |
+| **쓰기 표준** | 구조화된 마크다운 | deep-research narrative-driven 산문 |
+
+### 전체 흐름 (deep-research 8단계 → 5 Steps 매핑)
+
+```
+deep-research 8단계              → research-agent Step 매핑
+─────────────────────────────────────────────────────────
+Phase 1: SCOPE                   ┐
+Phase 2: PLAN                    ┘→ Step 0: 범위 정의 + 리서치 계획
+Phase 3: RETRIEVE                 → Step 1: 정보 수집 (로컬/NBLM + 웹)
+Phase 4: TRIANGULATE             ┐
+Phase 4.5: OUTLINE REFINEMENT    ┘→ Step 2: 삼각측량 + 구조 적응
+Phase 5: SYNTHESIZE              ┐
+Phase 6: CRITIQUE                ┘→ Step 3: 합성 + 비판적 검증
+Phase 7: REFINE                  ┐
+Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
+```
+
+### 산출물 목록
+
+```
+{output_dir}/
+├── deep_research_plan.md    # Step 0: 심화 리서치 계획 (Scope+Plan)
+├── deep_local_nblm.md       # Step 1: 로컬/NBLM 심화 (선택적 생성)
+├── web_deep_findings.md     # Step 1: 웹 심화 수집 결과
+└── research_deep.md         # Step 4: 심화 리서치 최종 산출물 ★
+```
+
+---
+
+### Step 0: 범위 정의 + 리서치 계획 (SCOPE + PLAN)
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | `{output_dir}/brainstorm_result.md`, `{output_dir}/input_data.json`, `{output_dir}/research_exploration.md` |
+| 참조 | `.claude/skills/deep-research/SKILL.md` Phase 1-2 |
+| 도구 | Read, Write |
+| 산출물 | `{output_dir}/deep_research_plan.md` |
+
+**동작**:
+
+1. **SCOPE (범위 정의)** — deep-research Phase 1 적용
+   - `brainstorm_result.md` §8 "Phase 4 심화 리서치 가이드" 파싱:
+     - 검증이 필요한 가정 목록
+     - 사례/문헌이 필요한 하위 주제 목록
+     - 추가 탐색이 필요한 방향
+     - 구체적 검색 키워드 제안
+   - 리서치 범위 경계 정의:
+     - **IN-SCOPE**: §8의 검증 필요 가정, 사례/문헌 필요 주제, 추가 탐색 방향
+     - **OUT-OF-SCOPE**: Phase 2에서 이미 충분히 수집된 정보 (중복 방지)
+   - `research_exploration.md` 스캔 → 이미 커버된 영역 식별
+
+2. **PLAN (전략 수립)** — deep-research Phase 2 적용
+   - §8의 4개 항목을 검색 쿼리로 변환 (한국어 + 영어 병행):
+     - "검증이 필요한 가정" → 검증 쿼리
+     - "사례/문헌이 필요한 주제" → 사례 검색 쿼리
+     - "추가 탐색 방향" → 탐색 쿼리
+     - "구체적 검색 키워드" → 직접 활용
+   - 검색 예산 배정 (Standard 모드 기준):
+
+     | 카테고리 | 예산 | 검색 전략 |
+     |---------|------|----------|
+     | 가정 검증 | 4~6회 | "{가정 내용} evidence/research" |
+     | 핵심(Must) 주제 사례 | 6~8회 | "{주제} case study/실습/tutorial" |
+     | 학술 문헌 | 4~6회 | "{키워드} research paper 2024 2025" |
+     | 보충 콘텐츠 | 4~6회 | "{키워드} worksheet/exercise/example" |
+     | **총계** | **20~25회** | |
+
+   - 우선순위: 핵심(Must) 주제 > 가정 검증 > 중요(Should) 주제
+
+3. `deep_research_plan.md` 작성
+
+---
+
+### Step 1: 정보 수집 (RETRIEVE)
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | `deep_research_plan.md`, `input_data.json` |
+| 참조 | `.claude/skills/deep-research/SKILL.md` Phase 3 |
+| 도구 | Read, Bash(NBLM), WebSearch, WebFetch, Write |
+| 산출물 | `{output_dir}/deep_local_nblm.md`(선택), `{output_dir}/web_deep_findings.md` |
+| 제약 | 웹 검색 20~25회, NBLM 추가 2~3회 |
+
+#### 1-1. 로컬/NBLM 심화 (선택)
+
+- **조건**: brainstorm §8에서 "기존 참고자료에서 추가 확인 필요" 항목이 있을 때만 실행
+- Phase 2에서 사용한 로컬 파일 재참조 (특정 섹션 심화 읽기)
+- NBLM 추가 쿼리 (예산: 노트북당 2~3회, Phase 2 잔여 예산 활용)
+- 산출물: `deep_local_nblm.md` (선택적 생성)
+
+#### 1-2. 웹 심화 리서치 — deep-research RETRIEVE 적용
+
+deep-research 원칙: "검색 전에 쿼리를 5~10개 독립 각도로 분해"
+
+- 카테고리별 순차 WebSearch 실행
+- WebFetch 선별 기준 (검색 결과에서 5~8개 URL):
+  - 학술 논문/보고서 (최우선)
+  - 대학/교육기관 공식 자료
+  - 공식 문서/가이드
+  - 최근 1년 이내 기술 블로그
+
+#### Anti-hallucination Protocol (deep-research 적용)
+
+모든 수집 팩트에 즉시 인용 번호 `[N]` 부여:
+
+```
+허용 (O):
+  "According to [1], 이 기술의 채택률은 2025년 기준 45%에 달한다."
+  "[2] reports that PBL 기반 교육이 전통 강의 대비 학습 성과가 23% 높다."
+
+금지 (X):
+  "연구에 따르면 이 기술의 채택률이 높다."  ← 출처 없는 주장
+  "많은 전문가들이 동의한다."                ← 모호한 귀속
+```
+
+FACTS(팩트)와 SYNTHESIS(분석)을 명확히 구분:
+- FACTS: 소스에서 직접 인용/요약한 내용 → 반드시 `[N]` 태그
+- SYNTHESIS: 에이전트가 도출한 분석/시사점 → "This suggests..." 등으로 표시
+
+산출물: `web_deep_findings.md`
+
+---
+
+### Step 2: 삼각측량 + 구조 적응 (TRIANGULATE + OUTLINE REFINEMENT)
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | `web_deep_findings.md`, `deep_local_nblm.md`(있을 경우), `research_exploration.md` |
+| 참조 | `.claude/skills/deep-research/SKILL.md` Phase 4, 4.5 |
+| 도구 | Read, Write |
+| 산출물 | 내부 검증 결과 (Step 3에서 통합) |
+
+#### 2-1. Triangulation — deep-research Phase 4 적용
+
+주요 주장별 교차검증:
+
+| 소스 수 | 태그 | 처리 |
+|---------|------|------|
+| 3+ 소스 일치 | `[검증됨]` | 높은 신뢰도로 채택 |
+| 2 소스 일치 | `[검증됨]` | 채택, 추가 소스 있으면 보강 |
+| 1 소스만 존재 | `[미검증]` | 채택하되 한계 명시 |
+| 소스 간 모순 | `[충돌]` | 양쪽 기록, 우선순위로 해결 |
+
+충돌 해결 우선순위: `학술 > 공식문서 > 블로그 > SNS`
+
+#### 2-2. Outline Refinement — deep-research Phase 4.5 적용
+
+수집된 증거에 기반하여 산출물 구조를 동적 적응:
+
+- brainstorm §8의 원래 주제 목록 vs 실제 수집 결과 비교
+- 풍부한 증거가 있는 주제 → 섹션 확장
+- 증거 부족 주제 → 한계 명시 + **보완 검색** (Step 1로 1회 복귀, 최대 3~5회 추가)
+
+---
+
+### Step 3: 합성 + 비판적 검증 (SYNTHESIZE + CRITIQUE)
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | Step 2 결과 + 모든 중간 산출물 |
+| 참조 | `.claude/skills/deep-research/SKILL.md` Phase 5-6 |
+| 도구 | Read, Write |
+| 산출물 | 통합 초안 |
+
+#### 3-1. Synthesize — deep-research Phase 5 적용
+
+- 개별 소스를 넘어선 **새로운 인사이트** 도출
+- 패턴 식별: 여러 소스에 걸친 공통 주제
+- 시사점 도출: 강의 설계에 대한 구체적 제안
+- Phase 5(architecture-agent) 활용 가이드 작성:
+  - 검증된 사례로 뒷받침되는 주제 목록
+  - 시간 배분 시 고려할 콘텐츠 깊이
+  - 활동/실습에 활용 가능한 자료 목록
+
+#### 3-2. Critique — deep-research Phase 6 적용 (적군 분석)
+
+5개 관점에서 자기 비판적 검증:
+
+| 점검 항목 | 질문 | 미달 시 처리 |
+|----------|------|------------|
+| 수집 편향 | "영어/한국어 자료 균형은?" | 부족한 언어로 추가 검색 |
+| 최신성 | "2년 이상 된 자료 비율이 과반인가?" | 최신 자료 보강 검색 |
+| 다양성 | "소스 유형이 편향되지 않았는가?" | 부족한 유형 보강 |
+| 커버리지 | "brainstorm §8의 모든 항목이 커버되었는가?" | 미커버 항목 Step 1 보완 |
+| 반론 | "각 주요 발견에 대한 반론은?" | 약점/한계 명시 |
+
+미커버 항목 → Step 1로 1회 보완 (최대 3~5회 추가 검색)
+
+---
+
+### Step 4: 정제 + 최종 산출물 (REFINE + PACKAGE)
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | Step 3 통합 초안 + input_data.json |
+| 참조 | `.claude/skills/deep-research/SKILL.md` Phase 7-8 |
+| 도구 | Read, Write, Bash(검증 스크립트) |
+| 산출물 | `{output_dir}/research_deep.md` ★ 최종 산출물 |
+
+#### 4-1. Refine — deep-research Phase 7 적용
+
+- Critique에서 발견된 간격 해결
+- 인용 정확성 최종 확인
+- 쓰기 표준 적용: narrative-driven 산문, bullet 최소화, 정밀한 인용
+
+#### 4-2. Package — deep-research Phase 8 적용 (MD only)
+
+- `research_deep.md` 단일 파일 생성 (HTML/PDF 생략)
+- 검증 스크립트 실행 (가능한 경우):
+
+```bash
+# 인용 검증
+python3 .claude/skills/deep-research/scripts/verify_citations.py --report {output_dir}/research_deep.md
+
+# 보고서 구조/품질 검증
+python3 .claude/skills/deep-research/scripts/validate_report.py --report {output_dir}/research_deep.md
+```
+
+- 검증 실패 시: 1회 자동 수정 → 2회 실패 시 한계 명시 후 진행
+
+#### 4-3. research_deep.md 산출물 구조
+
+```markdown
+# 심화 리서치 결과
+
+## Executive Summary
+(50~250 words. 심화 리서치의 핵심 발견 요약)
+
+## 메타데이터
+- 강의 주제: {topic}
+- 리서치 일자: {date}
+- 리서치 모드: {Standard/Deep}
+- 자료원 현황: 웹 {N}건, 로컬 심화 {N}건, NBLM 심화 {N}건
+- 검증 현황: 검증됨 {N}건, 미검증 {N}건, 충돌 {N}건
+- 방법론: deep-research 8단계 파이프라인 (SKILL.md 참조)
+
+## 1. 가정 검증 결과
+(brainstorm §8 "검증이 필요한 가정" 각각에 대해)
+| # | 가정 | 검증 결과 | 근거 | 출처 | 태그 |
+|---|------|----------|------|------|------|
+
+## 2. 핵심 주제별 사례 및 문헌
+### 2-1. {핵심 주제 1}
+(narrative-driven 산문. 사례, 문헌, 강의 활용 포인트. 각 팩트에 [N] 인용)
+
+### 2-2. {핵심 주제 2}
+(동일 구조)
+
+## 3. 중요 주제별 보충 자료
+### 3-1. {중요 주제 1}
+(사례 1~2개 + 문헌)
+
+## 4. 보충 콘텐츠 (활동/실습용)
+| # | 자료명 | 유형 | 관련 주제 | URL/출처 | 활용 방법 |
+|---|--------|------|----------|---------|----------|
+
+## 5. 합성 인사이트 (Synthesis)
+(개별 소스를 넘어선 패턴, 시사점. 강의 설계 제안)
+
+## 6. 한계 및 주의사항 (Limitations & Caveats)
+### 6-1. 삼각측량 결과
+- 검증됨: {N}건 (2+ 소스 일치)
+- 미검증: {N}건 (단일 소스)
+- 충돌: {N}건 (소스 간 불일치)
+
+### 6-2. 비판적 검증 (Critique)
+- 수집 편향: {평가}
+- 최신성: {평가}
+- 다양성: {평가}
+- 커버리지: {평가}
+
+## 7. Phase 5 활용 가이드
+(architecture-agent가 참고할 핵심 포인트)
+- 검증된 사례로 뒷받침되는 주제 목록
+- 시간 배분 시 고려할 콘텐츠 깊이 정보
+- 활동/실습에 활용 가능한 자료 목록
+
+## Bibliography
+(CRITICAL — 사용된 모든 [1]~[N] 인용. ZERO TOLERANCE 정책)
+| # | 출처 | 유형 | 접근일자 | 신뢰도 |
+|---|------|------|---------|--------|
+| [1] | Author/Org (Year). "Title". Publication. URL | 학술/공식/블로그/로컬/NBLM | {날짜} | ★~★★★ |
+
+## Methodology Appendix
+(사용된 리서치 방법론 요약 — deep-research 8단계 적용 기록)
+```
+
+---
+
 ## 워크플로우별 동작
 
 | 워크플로우 | 탐색적 리서치 (Phase 2) | 심화 리서치 (Phase 4) |
 |-----------|----------------------|---------------------|
-| 강의구성안 | 위 Step 0~4 전체 수행 | deep-research 스킬 적용 (별도 설계) |
+| 강의구성안 | 위 Phase 2 Step 0~4 전체 수행 | 위 Phase 4 Step 0~4 전체 수행 (deep-research 방법론) |
 | 강의교안 | 참고자료 분석 + 교수법 사례, 유사 교안 벤치마킹 | 브레인스토밍 기반 예시 자료, 보충 콘텐츠, 참고 문헌 |

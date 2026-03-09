@@ -57,6 +57,17 @@ $ARGUMENTS
 **상세**: `.claude/agents/architecture-agent/AGENT.md`의 "강의구성안 아키텍처 설계" 섹션 참조
 
 ### Phase 6: 구성안 작성 → writer-agent
+
+**지시**: 아키텍처 설계와 이전 단계 산출물을 통합하여 최종 강의구성안을 작성하세요.
+**입력 파일**: `{output_dir}/architecture.md`, `{output_dir}/input_data.json`, `{output_dir}/brainstorm_result.md`, `{output_dir}/research_deep.md`
+**템플릿**: `.claude/templates/outline-template.md`
+**산출물 위치**: `{output_dir}/` (outline_draft.md, lecture_outline.md)
+**모드**: 최종 작성 — GAIDE 5단계 (Setup → Draft → Macro → Micro → Consolidation)
+**차시 내부 구조**: BOPPPS 모델 (50분 = B5 + O2 + P5 + P25 + P5 + S5 + 휴식10)
+**제약**: 정렬·시간·가독성 3중 검증 통과 필수
+**워크플로우**: Step 0(컨텍스트 로드) → Step 1(코스 레벨) → Step 2(차시 레벨) → Step 3(검증·보강) → Step 4(최종 정제)
+**상세**: `.claude/agents/writer-agent/AGENT.md`의 "강의구성안 구성안 작성" 섹션 참조
+
 ### Phase 7: 품질 검토 → review-agent
 
 ## 산출물 (01_outline/)
@@ -78,6 +89,7 @@ lectures/YYYY-MM-DD_{강의명}/01_outline/
 ├── web_deep_findings.md        # Phase 4: 웹 심화 수집 (Retrieve)
 ├── research_deep.md             # Phase 4: 심화 리서치 최종 ★
 ├── architecture.md              # Phase 5: 아키텍처 설계
+├── outline_draft.md             # Phase 6: 구성안 초안 (중간)
 ├── lecture_outline.md           # Phase 6: 최종 구성안 ★
 └── quality_review.md            # Phase 7: 품질 검토
 ```

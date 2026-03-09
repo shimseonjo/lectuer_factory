@@ -80,6 +80,71 @@ $ARGUMENTS
 **워크플로우**: Step 0(컨텍스트 로드) → Step 1(QM 적합성) → Step 2(5영역 심층) → Step 3(판정+작성)
 **상세**: `.claude/agents/review-agent/AGENT.md`의 "강의구성안 품질 검토" 섹션 참조
 
+### Phase 7 이후: 판정 분기 처리
+
+Phase 7 완료 후, `quality_review.md`를 읽어 판정에 따라 분기한다.
+
+```
+revision_count = 0
+
+[Phase 7 완료]
+  │
+  ├─ Read: {output_dir}/quality_review.md → verdict, restart_phase 파싱
+  │
+  ├─ APPROVED (8.0+):
+  │     → 사용자에게 완료 보고. 워크플로우 종료.
+  │
+  ├─ APPROVED WITH NOTES (6.0~7.9):
+  │     → 사용자에게 §4 수정 지시(P3 항목) 표시
+  │     → AskUserQuestion: "권고 사항을 반영하시겠습니까?"
+  │     → "예": writer-agent 경량 수정 (P3만, 재검토 없음) → 종료
+  │     → "아니오": 종료
+  │
+  ├─ REVISE (4.0~5.9) / REVISE MAJOR (0~3.9):
+  │     → IF revision_count >= 1:
+  │         STOP & CONSULT — 사용자에게 1차·2차 수정 지시 비교 보고
+  │         AskUserQuestion으로 사용자 판단 대기 → 종료 또는 수동 재실행
+  │     → revision_count += 1
+  │     → §6-1 "권장 재실행 시작 Phase" 파싱 → restart_phase
+  │
+  │     → IF restart_phase == 6:
+  │         Agent → writer-agent (수정 모드)
+  │     → IF restart_phase == 5:
+  │         Agent → architecture-agent (수정 모드) → writer-agent (재작성)
+  │     → IF restart_phase == 4:
+  │         Agent → research-agent (보강 모드) → architecture-agent (수정) → writer-agent (재작성)
+  │
+  │     → Phase 7 재실행 (review-agent)
+  │     → 분기 로직 처음으로 (revision_count 확인)
+```
+
+**수정 모드 지시 템플릿**:
+
+**writer-agent 수정 모드**:
+```
+지시: quality_review.md의 수정 지시를 반영하여 lecture_outline.md를 수정하세요.
+규칙: (1) P0·P1 반드시 반영 (2) P2 가능 범위 반영 (3) §6-3 강점 보호
+      (4) 수정 범위 외 섹션 변경 금지 (5) lecture_outline.md 직접 수정 (outline_draft.md 미갱신)
+입력: quality_review.md (추가), lecture_outline.md, architecture.md, input_data.json
+```
+
+**architecture-agent 수정 모드**:
+```
+지시: quality_review.md §6-2의 Phase 5 수정 지시를 반영하여 architecture.md를 수정하세요.
+규칙: (1) 지적된 구조적 문제만 수정 (2) 3중 검증 재실행 (3) architecture.md 덮어쓰기
+입력: quality_review.md, architecture.md, input_data.json, brainstorm_result.md, research_deep.md
+```
+
+**research-agent 보강 모드**:
+```
+지시: quality_review.md §6-2의 Phase 4 수정 지시에 따라 부족한 자료를 보강하세요.
+규칙: (1) 전면 재실행 아닌 보강(incremental) (2) 추가 웹 검색 5~10회 이내
+      (3) research_deep.md에 보강 섹션 추가(append)
+입력: quality_review.md, research_deep.md, input_data.json
+```
+
+**최대 재시도**: 1회 (원본 + 수정 = 총 2회). 2차 REVISE 시 사용자 개입 요청.
+
 ## 산출물 (01_outline/)
 
 ```

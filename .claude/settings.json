@@ -6,8 +6,12 @@
       "Glob",
       "Edit",
       "Write",
+      "WebSearch",
+      "WebFetch",
       "Bash(git *)",
       "Bash(ls *)",
+      "Bash(python3 *)",
+      "Bash(pdftotext *)",
       "mcp__filesystem__read_text_file",
       "mcp__filesystem__list_directory",
       "mcp__filesystem__directory_tree"

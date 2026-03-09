@@ -144,12 +144,18 @@ for i, slide in enumerate(prs.slides, 1):
 #### NBLM 호출 인터페이스
 
 ```bash
-# 1. 노트북 활성화 (URL 또는 ID)
-python3 .claude/skills/nblm/scripts/run.py nblm_cli.py activate {url}
+# 1. 노트북 활성화 (선택 — 같은 노트북에 여러 번 질문할 때 편리)
+python3 .claude/skills/nblm/scripts/run.py notebook_manager.py activate --id {notebook_id}
 
-# 2. 질문 (각 질문은 독립 컨텍스트)
-python3 .claude/skills/nblm/scripts/run.py ask_question.py --question "{질문}"
+# 2. 질문 (질문은 위치인자, --notebook-id로 대상 노트북 지정)
+python3 .claude/skills/nblm/scripts/run.py nblm_cli.py ask "{질문}" --notebook-id {notebook_id}
+
+# 3. 소스 목록 확인
+python3 .claude/skills/nblm/scripts/run.py nblm_cli.py sources --id {notebook_id}
 ```
+
+> **주의**: `ask` 명령에서 질문은 따옴표로 감싼 **위치인자**이고, `--notebook-id`는 옵션이다.
+> 활성 노트북이 설정되어 있으면 `--notebook-id` 생략 가능.
 
 #### 질문 생성 전략
 
@@ -540,12 +546,17 @@ Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
 **NBLM 호출 인터페이스** (Phase 2와 동일):
 
 ```bash
-# 1. 노트북 활성화
-python3 .claude/skills/nblm/scripts/run.py nblm_cli.py activate {url}
+# 1. 노트북 활성화 (선택 — 같은 노트북에 여러 번 질문할 때)
+python3 .claude/skills/nblm/scripts/run.py notebook_manager.py activate --id {notebook_id}
 
-# 2. 질문
-python3 .claude/skills/nblm/scripts/run.py ask_question.py --question "{질문}"
+# 2. 질문 (질문은 위치인자, --notebook-id로 대상 노트북 지정)
+python3 .claude/skills/nblm/scripts/run.py nblm_cli.py ask "{질문}" --notebook-id {notebook_id}
+
+# 3. 소스 목록 확인
+python3 .claude/skills/nblm/scripts/run.py nblm_cli.py sources --id {notebook_id}
 ```
+
+> **주의**: `ask` 명령에서 질문은 따옴표로 감싼 **위치인자**, `--notebook-id`는 옵션.
 
 **§8 기반 질문 생성 전략**:
 

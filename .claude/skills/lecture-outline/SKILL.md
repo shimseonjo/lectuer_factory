@@ -70,6 +70,16 @@ $ARGUMENTS
 
 ### Phase 7: 품질 검토 → review-agent
 
+**지시**: 최종 강의구성안과 전체 파이프라인 산출물을 독립적 외부 검토자 관점에서 품질 검증하세요.
+**입력 파일**: `{output_dir}/lecture_outline.md`, `{output_dir}/input_data.json`,
+  `{output_dir}/architecture.md`, `{output_dir}/brainstorm_result.md`, `{output_dir}/research_deep.md`
+**산출물 위치**: `{output_dir}/quality_review.md`
+**검토 프레임워크**: QM Rubric 7th Ed.(8기준) + 5영역 가중치 체크리스트(25/25/15/15/20)
+**판정 체계**: APPROVED(8.0+) / APPROVED WITH NOTES(6.0~7.9) / REVISE(4.0~5.9) / REVISE MAJOR(0~3.9)
+**자동 REVISE**: QM 기준 2·3 미충족, 영역 1·2 평균 5.0 미만
+**워크플로우**: Step 0(컨텍스트 로드) → Step 1(QM 적합성) → Step 2(5영역 심층) → Step 3(판정+작성)
+**상세**: `.claude/agents/review-agent/AGENT.md`의 "강의구성안 품질 검토" 섹션 참조
+
 ## 산출물 (01_outline/)
 
 ```

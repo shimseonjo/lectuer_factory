@@ -517,6 +517,44 @@ Step 2-5의 정렬 맵 검증 규칙 전체 실행.
 
 ---
 
+## 수정 모드 (Phase 7 REVISE 후속 처리)
+
+review-agent의 REVISE 판정에서 구조적 문제(Phase 5 책임)가 지적된 경우, Skill 오케스트레이터가 architecture-agent를 **수정 모드**로 재호출한다.
+
+### 수정 모드 흐름
+
+```
+quality_review.md + architecture.md + input_data.json + brainstorm_result.md + research_deep.md
+        │
+        ▼
+  ┌─────────────┐
+  │ 수정 Step 0  │ 수정 컨텍스트 로드
+  │ Read        │ quality_review.md §6-2의 Phase 5 수정 지시 파싱
+  └──────┬──────┘
+         │
+         ▼
+  ┌─────────────┐
+  │ 수정 Step 1  │ 구조적 문제 수정
+  │ Read, Write │ 정렬 맵, 차시 배치, Phase 비율, 평가 프레임 등 지적 항목 수정
+  └──────┬──────┘
+         │
+         ▼
+  ┌─────────────┐
+  │ 수정 Step 2  │ 3중 검증 재실행 + architecture.md 덮어쓰기
+  │ Read, Write │ 정렬/시간/인지부하 재검증
+  └─────────────┘
+```
+
+### 수정 모드 규칙
+
+1. `quality_review.md` §6-2의 **Phase 5 수정 지시만** 반영 (다른 Phase 지시 무시)
+2. 지적된 구조적 문제만 수정 — 기존 설계의 나머지 부분은 유지
+3. 수정 후 **3중 검증**(정렬/시간/인지부하)을 반드시 재실행
+4. `architecture.md`를 덮어쓰기
+5. 수정 완료 후 writer-agent가 재작성하므로, architecture.md의 정합성이 핵심
+
+---
+
 ## 워크플로우별 동작
 
 architecture-agent는 3개 워크플로우에서 사용됩니다. 강의구성안이 기본(상세)이며, 나머지는 차이점만 기술합니다.

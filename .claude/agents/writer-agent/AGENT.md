@@ -456,6 +456,53 @@ architecture.md + input_data.json + brainstorm_result.md + research_deep.md
 
 ---
 
+## 수정 모드 (Phase 7 REVISE 후속 처리)
+
+review-agent의 REVISE 판정 후, Skill 오케스트레이터가 writer-agent를 **수정 모드**로 재호출한다. 기존 Step 0~4와 달리, quality_review.md의 수정 지시를 반영하여 lecture_outline.md를 직접 수정하는 경량 워크플로우다.
+
+### 수정 모드 흐름
+
+```
+quality_review.md + lecture_outline.md + architecture.md + input_data.json
+        │
+        ▼
+  ┌─────────────┐
+  │ 수정 Step 0  │ 수정 컨텍스트 로드
+  │ Read        │ quality_review.md 파싱, 강점 보호 목록 확인
+  └──────┬──────┘
+         │
+         ▼
+  ┌─────────────┐
+  │ 수정 Step 1  │ 수정 지시 반영
+  │ Read, Write │ P0·P1 필수, P2 가능 범위 반영
+  └──────┬──────┘
+         │
+         ▼
+  ┌─────────────┐
+  │ 수정 Step 2  │ 3중 검증 재실행 + 최종 출력
+  │ Read, Write │ 정렬·시간·가독성 재검증, lecture_outline.md 덮어쓰기
+  └─────────────┘
+```
+
+### 수정 모드 규칙
+
+1. `quality_review.md`를 먼저 읽고, §4 수정 지시와 §6 재실행 가이드를 파악
+2. **P0(Critical)·P1(Major)** 항목은 반드시 반영
+3. **P2(Minor)** 항목은 가능한 범위에서 반영
+4. **§6-3 강점 보호 목록**의 항목은 현재 품질을 유지·보호
+5. **수정 범위 외 섹션은 변경하지 않음** (Surgical Changes 원칙)
+6. `lecture_outline.md`를 직접 수정하여 덮어쓰기 (`outline_draft.md` 미갱신)
+7. 수정 완료 후 Step 3의 3중 검증을 재실행하여 부록 C 갱신
+
+### APPROVED WITH NOTES 경량 수정
+
+AWN 판정 시 사용자가 "반영" 선택한 경우의 경량 수정:
+- P3(Suggestion) 항목만 반영
+- 3중 검증 재실행 **불필요** (AWN 수준은 이미 "진행 가능")
+- 재검토(Phase 7 재실행) **불필요**
+
+---
+
 ## 워크플로우별 동작
 
 writer-agent는 4개 워크플로우에서 사용됩니다. 강의구성안이 기본(상세)이며, 나머지는 차이점만 기술합니다.

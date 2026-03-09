@@ -47,6 +47,15 @@ $ARGUMENTS
 **상세**: `.claude/agents/research-agent/AGENT.md`의 "강의구성안 심화 리서치" 섹션 참조
 
 ### Phase 5: 아키텍처 설계 → architecture-agent
+
+**지시**: 브레인스토밍·심화리서치 결과를 기반으로 Backward Design 아키텍처를 설계하세요.
+**입력 파일**: `{output_dir}/input_data.json`, `{output_dir}/brainstorm_result.md`, `{output_dir}/research_deep.md`
+**산출물 위치**: `{output_dir}/architecture.md`
+**설계 프레임워크**: Backward Design 3단계 역순 (목표→평가→활동), Constructive Alignment, 4단계 매크로 구조
+**워크플로우**: Step 0(컨텍스트 로드+제약분석) → Step 1(목표 정제+평가 프레임) → Step 2(차시 구조+정렬 맵) → Step 3(3중 검증+작성)
+**검증**: 정렬 검증(목표↔활동↔평가 완전 매핑) + 시간 예산 검증(배정≤가용×1.05) + 인지 부하 검증(차시당 개념≤5)
+**상세**: `.claude/agents/architecture-agent/AGENT.md`의 "강의구성안 아키텍처 설계" 섹션 참조
+
 ### Phase 6: 구성안 작성 → writer-agent
 ### Phase 7: 품질 검토 → review-agent
 

@@ -1298,9 +1298,606 @@ input_data    기준   기준   기준   기준
 
 ---
 
+## 강의교안 심화 리서치 (Phase 4) 세부 워크플로우
+
+> **방법론 참조**: `.claude/skills/deep-research/SKILL.md` — 8단계 파이프라인을 교안 설계 맥락에 적용
+>
+> **핵심 전환**: 구성안 Phase 4가 CK(Content Knowledge) 검증이라면, 교안 Phase 4는 **PCK(Pedagogical Content Knowledge) 수집**이다.
+> "이 주제의 사실이 정확한가?" → "이 활동이 이 SLO를 달성하는가?"
+
+### 구성안 Phase 4와의 비교
+
+| 구분 | 구성안 Phase 4 | 교안 Phase 4 |
+|------|--------------|------------|
+| **입력** | `03_brainstorm_result.md` §8 (4항목) | `03_brainstorm_result.md` §11 (5항목) |
+| **리서치 초점** | 주제 콘텐츠 검증 (CK) | 교수법 적용 사례 (PCK) |
+| **4대 영역** | 가정 검증, 핵심 주제 사례, 학술 문헌, 보충 콘텐츠 | A. 교수법 사례, B. 발문 뱅크, C. 활동/보충 자료, D. 형성평가 도구 |
+| **고착 필터** | 타강의 목차 금지, 사례·문헌 허용 | 타강의 교안 스크립트 전사 금지, 교수법 패턴·활동 유형·발문 패턴 유지 |
+| **검증 기준** | 팩트 정확성, 최신성, 완전성 | 교수 모델 정합성, SLO-활동-평가 삼각 정렬, 인지 부하 적정성 |
+| **Critique 5관점** | 수집 편향, 최신성, 다양성, 커버리지, 반론 | 교수법 편향, 실용성, Bloom's 균형, SLO 커버리지, 학습자 접근성 |
+| **산출물 §7/§8** | Phase 5 활용 가이드 (주제 목록, 콘텐츠 깊이, 자료) | Phase 5 활용 가이드 (사례 목록, 평가 도구, 발문 은행, 시간 권장) |
+| **교수 모델 분기** | 없음 | `teaching_model`에 따라 리서치 질문·검색 카테고리 분기 |
+| **조건부 처리** | 없음 | `gagne_display`, `questioning_design`, `formative_assessment`에 따라 예산·범위 조정 |
+
+### 전체 흐름 (deep-research 8단계 → 5 Steps 매핑, 구성안과 동일 골격)
+
+```
+deep-research 8단계              → research-agent Step 매핑
+─────────────────────────────────────────────────────────
+Phase 1: SCOPE                   ┐
+Phase 2: PLAN                    ┘→ Step 0: 범위 정의 + 리서치 계획
+Phase 3: RETRIEVE                 → Step 1: 정보 수집 (로컬/NBLM + 웹)
+Phase 4: TRIANGULATE             ┐
+Phase 4.5: OUTLINE REFINEMENT    ┘→ Step 2: 삼각측량 + 교안 특화 검증
+Phase 5: SYNTHESIZE              ┐
+Phase 6: CRITIQUE                ┘→ Step 3: 합성 + 비판적 검증
+Phase 7: REFINE                  ┐
+Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
+```
+
+### 산출물 목록
+
+```
+{output_dir}/
+├── 04_deep_plan.md              # Step 0: 심화 리서치 계획 (Scope+Plan)
+├── 04_deep_local_nblm.md        # Step 1: 로컬/NBLM 심화 재분석
+├── 04_deep_web.md               # Step 1: 웹 심화 수집 결과
+└── 04_deep_research.md          # Step 4: 심화 리서치 최종 산출물 ★
+```
+
+---
+
+### Step 0: 범위 정의 + 리서치 계획 (SCOPE + PLAN)
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | `{output_dir}/03_brainstorm_result.md`, `{output_dir}/01_input_data.json`, `{output_dir}/02_explore_research.md` |
+| 참조 | `.claude/skills/deep-research/SKILL.md` Phase 1-2, `{outline_dir}/04_deep_research.md` (CK 상속) |
+| 도구 | Read, Write |
+| 산출물 | `{output_dir}/04_deep_plan.md` |
+
+**동작**:
+
+1. **SCOPE (범위 정의)** — deep-research Phase 1 적용
+   - `03_brainstorm_result.md` §11 "Phase 4 심화 리서치 가이드" 파싱:
+     - 검증이 필요한 활동/사례 목록
+     - 구체적 예시가 필요한 발문 영역
+     - 보충 콘텐츠가 필요한 SLO 목록
+     - 추가 탐색이 필요한 교수법 패턴
+     - 구체적 검색 키워드 제안
+   - §11의 5항목을 **4대 리서치 영역(A/B/C/D)**으로 재분류:
+
+     | §11 항목 | → 영역 | 리서치 목적 |
+     |---------|--------|-----------|
+     | 검증이 필요한 활동/사례 | A: 교수법 적용 사례 | Gagne 사태별/GRR 단계별 구체 활동 수집 |
+     | 구체적 예시가 필요한 발문 영역 | B: 발문 설계 | Bloom's 수준별 발문 뱅크 구축 |
+     | 보충 콘텐츠가 필요한 SLO 목록 | C: 활동/보충 자료 + D: 형성평가 도구 | SLO 커버리지 보완 (평가·자료) |
+     | 추가 탐색이 필요한 교수법 패턴 | A: 교수법 적용 사례 | GRR 전환, 스캐폴딩, 교수 모델 적용 사례 |
+     | 구체적 검색 키워드 | 전 영역 | 직접 활용 |
+
+   - 리서치 범위 경계 정의:
+     - **IN-SCOPE**: §11의 5항목 전체 + 교수 모델별 레슨 플랜 패턴
+     - **OUT-OF-SCOPE**: 주제 콘텐츠(CK) — `{outline_dir}/04_deep_research.md`에서 이미 수집
+   - `02_explore_research.md` 스캔 → 이미 커버된 교수법 정보 식별 (중복 방지)
+
+2. **PLAN (전략 수립)** — deep-research Phase 2 적용
+
+   §11의 5항목을 검색 쿼리로 변환 (한국어 + 영어 병행):
+
+   **교수 모델에 따른 리서치 질문 분기**:
+
+   *공통 질문* (모든 교수 모델):
+   - "§11의 검증 필요 활동에 대한 Gagne 사태별 구현 사례는?"
+     - `gagne_display == "all_9"` → 전체 9사태 적용 사례, 사태 간 전환 전략 포함
+     - `gagne_display == "core_5"` → 핵심 5사태(1·2·3·6·9) 중심 사례
+     - `gagne_display == "none"` → Gagne 질문 생략, 교수법 패턴에 통합
+   - "Bloom's {수준}의 발문 예시와 학습자 응답 패턴은?"
+     - `questioning_design.include == false` → 발문 질문 최소화 (1개)
+   - "§11의 미커버 SLO에 대한 형성평가 도구는?"
+     - `formative_assessment.type == "none"` → 형성평가 질문 최소화 (1개)
+
+   *직접교수법 (direct_instruction) 추가*:
+   - "Hunter 6단계를 {topic}에 적용한 레슨 플랜 사례에서, 각 단계의 구체적 활동은?"
+   - "I Do→We Do→You Do 전환 시 효과적인 스캐폴딩 제거 기법과 시간 배분은?"
+   - "Checking for Understanding(CFU) 기법: 신호 반응, 화이트보드, 클리커 활용 사례는?"
+
+   *PBL 추가*:
+   - "{topic} 관련 실세계 문제 시나리오 설계 사례 (학습 목표 역방향 설계)는?"
+   - "PBL 촉진자 발문(L4~L5) 패턴: 탐구 촉진, 가설 검증, 대안 비교 질문은?"
+   - "PBL 동료평가 루브릭 + 성찰 저널 도구 사례는?"
+
+   *플립러닝 (flipped) 추가*:
+   - "Before Class: {topic}의 10분 이내 사전학습 자료 설계 + 가이드 질문 사례는?"
+   - "During Class: 사전학습 확인 → 교실 심화 활동(L3+ 수준) 전환 패턴은?"
+   - "After Class: 학습 전이 강화 후속 과제 설계 사례는?"
+
+   *혼합 (mixed) 추가*:
+   - 위 3개 모델의 질문 모두 포함
+   - "차시 간 교수 모델 전환 시 학습자 혼란 방지 전략은?"
+
+   리서치 예산 배정:
+
+   **로컬/NBLM (Step 1-1, 1-2)**:
+
+   | 소스 | 예산 | 전략 |
+   |------|------|------|
+   | 로컬 참고자료 | §11 관련 파일 선택적 재읽기 | PCK 관점으로 원본 심화 분석 |
+   | NotebookLM | 노트북당 3~5쿼리 | §11 기반 새 질문 생성 → 심화 질의 |
+
+   **웹 검색 (Step 1-3)**:
+
+   | 카테고리 | 기본 예산 | 조건부 조정 |
+   |---------|----------|-----------|
+   | 교수법 적용 사례 (A) | 5~7회 | `gagne_display == "none"` → 4~5회 |
+   | 발문 뱅크 (B) | 4~6회 | `questioning_design.include == false` → **1~2회로 축소**, 잔여 예산을 C/D로 재배분 |
+   | 활동/실습 자료 (C) | 4~6회 | 발문 축소 시 +2회 |
+   | 형성평가 도구 (D) | 3~4회 | `formative_assessment.type == "none"` → 1회로 축소, 잔여 예산을 C로 재배분 |
+   | SLO 보충 (C+D) | 3~4회 | §11 미커버 SLO 수에 비례 조정 |
+   | **웹 총계** | **20~25회** | |
+
+   - 수행 순서: **로컬 → NBLM → 웹** (로컬/NBLM 결과가 웹 검색 방향을 보완)
+   - 우선순위: 미커버 SLO 보충 > 활동/사례 검증 > 발문 뱅크
+
+3. **CK 상속 확인**: `{outline_dir}/04_deep_research.md` 스캔
+   - 주제 콘텐츠(사실, 사례, 문헌)는 이미 수집됨 → PCK 수집에만 집중
+   - 구성안 심화 리서치에서 발견된 사례 중 교안에 활용 가능한 것은 참조
+
+4. `04_deep_plan.md` 작성
+
+---
+
+### Step 1: 정보 수집 (RETRIEVE)
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | `04_deep_plan.md`, `01_input_data.json`, `03_brainstorm_result.md` §11 |
+| 참조 | `.claude/skills/deep-research/SKILL.md` Phase 3 |
+| 도구 | Read, Glob, Bash(NBLM), WebSearch, WebFetch, Write |
+| 산출물 | `{output_dir}/04_deep_local_nblm.md`, `{output_dir}/04_deep_web.md` |
+| 제약 | 웹 검색 20~25회, NBLM 노트북당 3~5쿼리 |
+
+#### 1-1. 로컬 참고자료 심화 재분석 (필수)
+
+> Phase 2에서 생성한 `02_explore_local.md`를 **재사용하지 않는다**. brainstorm 결과(§11)의 관점에서 원본 파일을 새로 읽고 분석한다.
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | `01_input_data.json` → `inherited.reference_sources.local_folders`, `03_brainstorm_result.md` §11 |
+| 도구 | Glob, Read, Bash |
+| 산출물 | `04_deep_local_nblm.md` 전반부 (로컬 섹션) |
+| 조건 | `local_folders`가 빈 배열이면 **로컬 섹션 건너뜀** (NBLM은 독립 실행) |
+
+**동작**:
+
+1. `03_brainstorm_result.md` §11에서 **PCK 심화 분석 관점** 추출:
+   - "검증이 필요한 활동/사례" → 로컬 자료에서 교수법 적용 패턴 탐색
+   - "구체적 예시가 필요한 발문 영역" → 로컬 자료에서 발문 예시·대화 패턴 추출
+   - "보충 콘텐츠가 필요한 SLO" → 로컬 자료에서 활동지·워크시트·루브릭 탐색
+   - "추가 탐색이 필요한 교수법 패턴" → 로컬 자료에서 GRR·Gagne 적용 사례 탐색
+
+2. Phase 2 `02_explore_local.md`를 **인덱스로만** 참조:
+   - 어떤 파일이 분석되었는지 확인 (파일 목록)
+   - Phase 2에서 요약된 내용은 읽지 않음 (고착 효과 방지)
+
+3. §11 관점으로 원본 파일 **선택적 심화 읽기**:
+   - §11의 활동/발문/SLO와 직접 관련된 파일만 선별
+   - Phase 2에서 건너뛴 파일도 §11 기준으로 재평가
+   - 파일 전체가 아닌 **관련 섹션만 집중 읽기** (Ctrl+F 방식)
+
+4. 확장자별 읽기 전략 (Phase 2와 동일):
+
+   | 확장자 | 읽기 방법 |
+   |--------|----------|
+   | `.md` `.txt` | Read 도구 직접 읽기 |
+   | `.pdf` (≤20p) | `Read(pages="관련페이지")` — 목차에서 관련 섹션 특정 |
+   | `.pdf` (>20p) | `Bash: pdftotext` → 키워드 검색으로 관련 부분 추출 |
+   | `.pptx` | `Bash: python3 -c "..."` (Phase 2 인라인 스크립트 동일) |
+   | `.docx` | `Bash: pandoc {file} -t plain` |
+
+5. 파일별 PCK 심화 분석 결과 작성:
+   - §11 관점과의 관련성 명시
+   - 교수법 적용 패턴 추출 (GRR 단계, Gagne 사태 매핑)
+   - 발문 예시 추출 (Bloom's 수준 태깅)
+   - 활동·평가 도구 추출 (SLO 매핑)
+   - 모든 팩트에 `[L-N]` (Local 인용번호) 부여
+
+#### 1-2. NotebookLM 심화 재분석 (필수)
+
+> Phase 2에서 생성한 `02_explore_nblm.md`를 **재사용하지 않는다**. brainstorm 결과(§11)를 기반으로 새로운 질문을 생성하여 NBLM에 질의한다.
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | `01_input_data.json` → `inherited.reference_sources.notebooklm_urls`, `03_brainstorm_result.md` §11 |
+| 도구 | Bash (NBLM 스킬 CLI) |
+| 산출물 | `04_deep_local_nblm.md` 후반부 (NBLM 섹션) |
+| 조건 | `notebooklm_urls`가 빈 배열이면 **NBLM 섹션 건너뜀** (로컬은 독립 실행) |
+| 제약 | 노트북당 최대 3~5쿼리 |
+
+**NBLM 호출 인터페이스** (Phase 2와 동일):
+
+```bash
+# 1. 노트북 활성화 (선택 — 같은 노트북에 여러 번 질문할 때)
+python3 .claude/skills/nblm/scripts/run.py notebook_manager.py activate --id {notebook_id}
+
+# 2. 질문 (질문은 위치인자, --notebook-id로 대상 노트북 지정)
+python3 .claude/skills/nblm/scripts/run.py nblm_cli.py ask "{질문}" --notebook-id {notebook_id}
+
+# 3. 소스 목록 확인
+python3 .claude/skills/nblm/scripts/run.py nblm_cli.py sources --id {notebook_id}
+```
+
+> **주의**: `ask` 명령에서 질문은 따옴표로 감싼 **위치인자**, `--notebook-id`는 옵션.
+
+**§11 기반 PCK 질문 생성 전략**:
+
+`03_brainstorm_result.md` §11의 항목을 NBLM 질문으로 변환:
+
+1. **활동 검증 질문**: "이 자료에서 '{활동/사례}'의 교수 효과를 뒷받침하거나 대안을 제시하는 내용이 있는가?"
+2. **발문 탐색 질문**: "이 자료에서 Bloom's {수준}에 해당하는 발문 예시나 발문 설계 가이드가 있는가?"
+3. **SLO 평가 질문**: "이 자료에서 '{SLO}'를 평가할 수 있는 형성평가 방법이나 루브릭이 있는가?"
+4. **교수법 패턴 질문**: "이 자료에서 {교수법 패턴}(GRR 전환, 스캐폴딩 등)의 적용 사례나 가이드라인이 있는가?"
+5. **보충 자료 질문**: "이 자료에서 {주제} 관련 실습 활동지, 워크시트, 평가 기준 등이 있는가?"
+
+**후속 질문 프로토콜** (Phase 2와 동일):
+- NBLM 응답에서 정보 충분성 판단
+- 부족하면 추가 쿼리 실행 (쿼리 예산 내)
+- 충분하면 다음 노트북 또는 다음 단계로 진행
+
+**동작**:
+
+1. §11에서 NBLM으로 확인할 항목 목록 작성
+2. 각 노트북별 관련 질문 매핑 (모든 질문을 모든 노트북에 보내지 않음)
+3. 노트북 활성화 → 질문 순차 실행
+4. 모든 NBLM 팩트에 `[NB-N]` (NBLM 인용번호) 부여
+
+#### 04_deep_local_nblm.md 산출물 구조
+
+```markdown
+# Phase 4 로컬/NBLM 심화 재분석 결과 (교안)
+
+## 분석 관점 (brainstorm §11 기반)
+- 검증 대상 활동/사례: {목록}
+- 구체적 예시가 필요한 발문 영역: {목록}
+- 보충 콘텐츠가 필요한 SLO: {목록}
+- 추가 탐색 교수법 패턴: {목록}
+
+## 로컬 참고자료 심화 분석
+### {파일명 1}
+- §11 관련성: {어떤 항목과 관련되는지}
+- 교수법 적용 패턴: {내용} [L-1]
+- 발문 예시: {내용, Bloom's 수준 태깅} [L-2]
+- 활동/평가 도구: {내용} [L-3]
+- 교안 활용 포인트: {내용}
+
+### {파일명 2}
+(동일 구조)
+
+## NotebookLM 심화 분석
+### {노트북명 1}
+- 질의 항목: {§11의 어떤 항목을 확인했는지}
+- Q: {질문} → A: {핵심 답변 요약} [NB-1]
+- 교안 활용 포인트: {내용}
+
+### {노트북명 2}
+(동일 구조)
+
+## 로컬/NBLM 소스 통합 요약
+- 교수법 사례(A) 기여: {N}건
+- 발문 예시(B) 기여: {N}건
+- 활동/보충 자료(C) 기여: {N}건
+- 형성평가 도구(D) 기여: {N}건
+- 웹 리서치로 보완이 필요한 항목: {목록}
+```
+
+#### 1-3. 웹 심화 리서치 — deep-research RETRIEVE 적용 (교안 맥락)
+
+deep-research 원칙: "검색 전에 쿼리를 5~10개 독립 각도로 분해"
+
+- 5카테고리별 순차 WebSearch 실행 (04_deep_plan.md의 예산 배정 따름)
+- **교안 특화 검색 쿼리 예시**:
+
+```
+카테고리 A — 교수법 적용 사례:
+- "{topic} lesson plan {teaching_model} example"
+- "{topic} 수업 설계 {교수 모델 한국어명} 사례"
+- "Gagne nine events {topic} lesson plan"  (gagne_display ≠ none)
+- "Hunter model lesson plan {topic}"  (직접교수법 시)
+- "PBL scenario design {topic}"  (PBL 시)
+- "flipped classroom activity {topic}"  (플립러닝 시)
+- "gradual release of responsibility {topic} example"
+- "I do we do you do {topic} activity"
+
+카테고리 B — 발문 뱅크:
+- "Bloom's taxonomy {수준} questions {topic}"
+- "{topic} higher order thinking questions"
+- "{teaching_model} questioning strategy examples"
+- "{topic} 발문 예시 Bloom's"
+
+카테고리 C — 활동/실습 자료:
+- "{topic} hands-on activity worksheet"
+- "{topic} 실습 활동 워크시트"
+- "{topic} rubric assessment"
+- "{topic} scaffolding activity design"
+
+카테고리 D — 형성평가 도구:
+- "{teaching_model} formative assessment tools"
+- "exit ticket {topic} examples"
+- "{formative_assessment_type} {topic} classroom"
+- "형성평가 도구 {topic} {교수 모델}"
+
+카테고리 SLO 보충:
+- "{SLO 주제} assessment rubric"
+- "{SLO 주제} learning activity"
+- "{SLO 주제} 형성평가 문항"
+```
+
+- **교안 특화 WebFetch 선별 기준** (검색 결과에서 5~8개 URL):
+  1. 교육학 연구 (ERIC, Frontiers in Education, PMC)
+  2. 대학 교수학습센터 (CMU Eberly, UW CTE, UNC CITL, ODU)
+  3. 교육 실무 미디어 (Edutopia, Faculty Focus, ASCD)
+  4. 레슨 플랜 데이터베이스 (실무 사례)
+  5. 최근 1년 교수법 블로그
+
+#### Anti-hallucination Protocol (deep-research 적용, 구성안과 동일)
+
+모든 수집 팩트에 즉시 인용 번호 `[N]` 부여:
+
+```
+허용 (O):
+  "According to [1], GRR 모델 적용 시 전통적 직접 교수법 대비 학습 유지율이 32% 향상된다."
+  "[2] reports that Exit Ticket의 3-2-1 형식이 학기 전반의 학습 성과를 개선한다."
+
+금지 (X):
+  "연구에 따르면 이 교수법이 효과적이다."  ← 출처 없는 주장
+  "많은 교수자들이 이 활동을 선호한다."     ← 모호한 귀속
+```
+
+FACTS(팩트)와 SYNTHESIS(분석)을 명확히 구분:
+- FACTS: 소스에서 직접 인용/요약한 내용 → 반드시 `[N]` 태그
+- SYNTHESIS: 에이전트가 도출한 분석/시사점 → "This suggests..." 등으로 표시
+
+#### 고착 효과 필터 (교안 심화 버전)
+
+수집 시 반드시 적용:
+
+```
+허용 (O):
+  "GRR에서 We Do 단계는 15~20분 지속 후 You Do로 전환하는 것이 효과적이다"
+  "Bloom's L4 발문 패턴: '이 두 접근법의 근본적 차이는 무엇인가?'"
+  "Exit Ticket으로 3-2-1 형식(3가지 배운 것, 2가지 궁금한 것, 1가지 적용할 것)을 사용하면 빠른 점검이 가능하다"
+  "PBL에서 동료평가 루브릭 4개 기준: 논리성, 창의성, 협업, 발표력"
+
+금지 (X):
+  "1차시 도입에서 강사는 이렇게 말한다: '안녕하세요, 오늘은...'"  ← 구체적 교안 스크립트 전사
+  "이 교안의 2차시 전개부 We Do 활동은 다음과 같다: ..."         ← 특정 강의의 차시별 세부 교안
+  "이 강사는 PPT 3번 슬라이드에서 이 발문을 던진다"              ← 특정 강의 자료 구체 전사
+
+변환 규칙:
+  "1차시에서 이 CFU 발문을 사용하고..." → "이 유형의 CFU 발문이 효과적이다"
+  "이 교안의 도입부 5분은..." → "도입 단계에서 이런 접근법이 효과적이다"
+  "2차시 실습 가이드: Step 1~5" → "단계적 실습 설계 패턴이 활용된다"
+```
+
+산출물: `04_deep_web.md`
+
+---
+
+### Step 2: 삼각측량 + 교안 특화 검증 (TRIANGULATE + OUTLINE REFINEMENT)
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | `04_deep_local_nblm.md`, `04_deep_web.md`, `02_explore_research.md` |
+| 참조 | `.claude/skills/deep-research/SKILL.md` Phase 4, 4.5 |
+| 도구 | Read, Write |
+| 산출물 | 내부 검증 결과 (Step 3에서 통합) |
+
+> **3소스 통합**: 로컬(`[L-N]`), NBLM(`[NB-N]`), 웹(`[N]`) 세 가지 소스를 모두 교차검증에 포함한다.
+
+#### 2-1. Triangulation — deep-research Phase 4 적용 (3소스 통합)
+
+주요 주장별 **3소스(로컬 + NBLM + 웹)** 교차검증:
+
+| 소스 수 | 태그 | 처리 |
+|---------|------|------|
+| 3+ 소스 일치 | `[검증됨]` | 높은 신뢰도로 채택 |
+| 2 소스 일치 | `[검증됨]` | 채택, 추가 소스 있으면 보강 |
+| 1 소스만 존재 | `[미검증]` | 채택하되 한계 명시 |
+| 소스 간 모순 | `[충돌]` | 양쪽 기록, 우선순위로 해결 |
+
+충돌 해결 우선순위: `교육학 연구 > 교수학습센터 가이드 > 교육 실무 미디어 > 블로그`
+
+#### 2-2. 교안 특화 검증 3기준
+
+수집된 자료 전체에 대해 다음 3기준을 추가 검증:
+
+| 검증 기준 | 질문 | FAIL 시 처리 |
+|----------|------|------------|
+| **교수 모델 정합성** | 수집한 활동/발문/평가가 `teaching_model`의 원칙과 일치하는가? (PBL 교안에 직접 설명 중심 활동이 지배적이면 실패) | 불일치 자료에 `[모델불일치]` 태그, 대안 검색 |
+| **SLO-활동-평가 삼각 정렬** | 목표의 Bloom's 수준 = 활동의 인지 요구 수준 = 평가의 측정 수준인가? | 수준 불일치 항목 식별, 정렬된 대안 검색 |
+| **인지 부하 적정성** | 수집된 콘텐츠 배치 시 차시당 개념 ≤5, 활동 전환 ≤20분 기준 충족 가능한가? | 과부하 자료에 분할 권고 표기, 대안 활동 제안 |
+
+#### 2-3. Outline Refinement — deep-research Phase 4.5 적용
+
+수집된 증거에 기반하여 산출물 구조를 동적 적응:
+
+- brainstorm §11의 원래 항목 목록 vs 실제 수집 결과 비교
+- 풍부한 증거가 있는 영역 → 섹션 확장
+- 증거 부족 영역 → 한계 명시 + **보완 검색** (Step 1로 1회 복귀, 최대 3~5회 추가)
+
+---
+
+### Step 3: 합성 + 비판적 검증 (SYNTHESIZE + CRITIQUE)
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | Step 2 결과 + 모든 중간 산출물 |
+| 참조 | `.claude/skills/deep-research/SKILL.md` Phase 5-6 |
+| 도구 | Read, Write |
+| 산출물 | 통합 초안 |
+
+#### 3-1. Synthesize — deep-research Phase 5 적용
+
+- 개별 소스를 넘어선 **교수법 패턴** 도출
+- 교수 모델별 일관된 수업 흐름 패턴 식별
+- 시사점 도출: 교안 구조 설계에 대한 구체적 제안
+- **Phase 5(architecture-agent) 활용 가이드** 작성:
+  - 검증된 활동 사례 목록 (Gagne 사태별/GRR 단계별 3개+ 사례)
+  - SLO별 매핑된 형성평가 도구 (최소 1개/SLO)
+  - 발문 예시 은행 (Bloom's L4~L6 완성 발문 + 예상 답변)
+  - 시간 배분 권장 (GRR 전환 시간, 활동 주기, 도입:전개:정리 실제 분배)
+
+#### 3-2. Critique — deep-research Phase 6 적용 (교안 맞춤 5관점)
+
+| 점검 항목 | 질문 | 미달 시 처리 |
+|----------|------|------------|
+| **교수법 편향** | "수집 자료가 특정 교수법(직접교수법 등)에 편향되지 않았는가?" | 다른 교수법 관점 보강 검색 |
+| **실용성** | "수집된 활동/발문이 실제 교실 환경에서 실행 가능한가?" | 실행 불가 자료에 `[실용성 주의]` 태그, 대안 제시 |
+| **Bloom's 균형** | "발문 뱅크가 L1~L6 전 수준을 균형있게 커버하는가? 특히 L4~L6이 충분한가?" | 부족 수준 보강 검색 |
+| **SLO 커버리지** | "brainstorm §11의 모든 미커버 SLO가 보완되었는가?" | 미커버 항목 Step 1 보완 (최대 3~5회 추가 검색) |
+| **학습자 접근성** | "수집된 자료가 `target_learner.level`에 적합한가? 초급 학습자에게 L6 발문만 있지 않은가?" | 수준 조정 또는 스캐폴딩 주석 추가 |
+
+미커버 항목 → Step 1로 1회 보완 (최대 3~5회 추가 검색)
+
+---
+
+### Step 4: 정제 + 최종 산출물 (REFINE + PACKAGE)
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | Step 3 통합 초안 + 01_input_data.json |
+| 참조 | `.claude/skills/deep-research/SKILL.md` Phase 7-8 |
+| 도구 | Read, Write, Bash(검증 스크립트) |
+| 산출물 | `{output_dir}/04_deep_research.md` ★ 최종 산출물 |
+
+#### 4-1. Refine — deep-research Phase 7 적용
+
+- Critique에서 발견된 간격 해결
+- 인용 정확성 최종 확인
+- 쓰기 표준 적용: narrative-driven 산문, bullet 최소화, 정밀한 인용
+
+#### 4-2. Package — deep-research Phase 8 적용 (MD only)
+
+- `04_deep_research.md` 단일 파일 생성 (HTML/PDF 생략)
+- 검증 스크립트 실행 (가능한 경우):
+
+```bash
+# 인용 검증
+python3 .claude/skills/deep-research/scripts/verify_citations.py --report {output_dir}/04_deep_research.md
+
+# 보고서 구조/품질 검증
+python3 .claude/skills/deep-research/scripts/validate_report.py --report {output_dir}/04_deep_research.md
+```
+
+- 검증 실패 시: 1회 자동 수정 → 2회 실패 시 한계 명시 후 진행
+
+#### 4-3. 04_deep_research.md 산출물 구조
+
+```markdown
+# 심화 리서치 결과 (교안)
+
+## Executive Summary
+(50~250 words. 교안 심화 리서치의 핵심 발견 요약)
+
+## 메타데이터
+- 강의 주제: {topic}
+- 교수 모델: {teaching_model.label}
+- 리서치 일자: {date}
+- 리서치 모드: {Standard/Deep}
+- 리서치 초점: PCK (교수법 사례, 발문 뱅크, 활동/보충 자료, 형성평가 도구)
+- 자료원 현황: 웹 {N}건, 로컬 심화 {N}건, NBLM 심화 {N}건
+- 검증 현황: 검증됨 {N}건, 미검증 {N}건, 충돌 {N}건
+- 방법론: deep-research 8단계 파이프라인 (SKILL.md 참조)
+
+## 1. 활동/사례 검증 결과
+(brainstorm §11 "검증이 필요한 활동/사례" 각각에 대해)
+| # | 활동/사례 | 검증 결과 | 근거 | 출처 | 태그 |
+|---|---------|----------|------|------|------|
+
+## 2. 교수법 적용 사례
+### 2-1. 교수 모델별 레슨 플랜 패턴
+(narrative-driven 산문. {teaching_model}에 해당하는 사례 중심. 각 팩트에 [N] 인용)
+
+### 2-2. Gagne 사태별 구현 사례
+(gagne_display 설정에 따라 전체 9사태 / 핵심 5사태 / 라벨 없음)
+
+### 2-3. GRR 단계별 활동 설계
+(I Do: 시범/싱크 얼라우드 사례, We Do: 스캐폴딩 활동, You Do: 독립 연습)
+
+## 3. 발문 예시 은행
+### 3-1. Bloom's 수준별 발문 (L1~L6)
+(수준별 3~5개 발문 예시, 학습자 수준별 예상 답변 포함)
+
+### 3-2. 교수 모델별 단계별 발문 배치
+(도입/전개 초반/전개 후반/정리 각 단계의 Bloom's 수준 권장 + 예시)
+
+## 4. 형성평가 도구 카탈로그
+### 4-1. SLO별 매핑된 평가 도구
+(§11 미커버 SLO 각각에 대해 1+ 평가 도구 매핑)
+
+### 4-2. 교수 모델 × 평가 유형별 도구
+({teaching_model} × {formative_assessment.type} 조합의 구체적 도구)
+
+## 5. 보충 콘텐츠 (활동/실습용)
+| # | 자료명 | 유형 | 관련 SLO | URL/출처 | 활용 방법 |
+|---|--------|------|----------|---------|----------|
+
+## 6. 합성 인사이트 (Synthesis)
+(개별 소스를 넘어선 패턴, 시사점. 교안 구조 설계 제안)
+
+## 7. 한계 및 주의사항 (Limitations & Caveats)
+### 7-1. 삼각측량 결과
+- 검증됨: {N}건 (2+ 소스 일치)
+- 미검증: {N}건 (단일 소스)
+- 충돌: {N}건 (소스 간 불일치)
+
+### 7-2. 교안 특화 검증 결과
+- 교수 모델 정합성: {평가}
+- SLO-활동-평가 삼각 정렬: {평가}
+- 인지 부하 적정성: {평가}
+
+### 7-3. 비판적 검증 (Critique 5관점)
+- 교수법 편향: {평가}
+- 실용성: {평가}
+- Bloom's 균형: {평가}
+- SLO 커버리지: {평가}
+- 학습자 접근성: {평가}
+
+## 8. Phase 5 활용 가이드
+(architecture-agent가 직접 참조할 핵심 포인트)
+
+### 8-1. 검증된 사례 목록
+- Gagne 사태별 구체적 활동 사례 (3개 이상/사태)
+- GRR 단계별 활동 사례 (I Do/We Do/You Do 각 3+ 사례)
+- 교수 모델별 레슨 플랜 패턴 요약
+
+### 8-2. 형성평가 도구 카탈로그
+- SLO별 매핑된 평가 도구 (최소 1개/SLO)
+- 교수 모델 × 형성평가 유형별 구체적 도구 목록
+
+### 8-3. 발문 예시 은행
+- Bloom's L4~L6 완성 발문 + 예상 답변 (학습자 수준별)
+- 교수 모델별 단계별(도입/전개/정리) 발문 배치 가이드
+
+### 8-4. 시간 배분 권장
+- GRR 전환 시간 (I Do→We Do: {N}분 권장, We Do→You Do: {N}분 권장)
+- 활동 전환 주기 (15~20분마다 활동 유형 전환 권장)
+- 도입:전개:정리 실제 분배 (교수 모델별)
+
+## Bibliography
+(CRITICAL — 사용된 모든 [1]~[N] + [L-1]~[L-N] + [NB-1]~[NB-N] 인용. ZERO TOLERANCE 정책)
+| # | 출처 | 유형 | 접근일자 | 신뢰도 |
+|---|------|------|---------|--------|
+| [1] | Author/Org (Year). "Title". Publication. URL | 학술/교수학습센터/실무/로컬/NBLM | {날짜} | ★~★★★ |
+
+## Methodology Appendix
+(사용된 리서치 방법론 요약 — deep-research 8단계 적용 기록, PCK 중심 전환 근거)
+```
+
+---
+
 ## 워크플로우별 동작
 
 | 워크플로우 | 탐색적 리서치 (Phase 2) | 심화 리서치 (Phase 4) |
 |-----------|----------------------|---------------------|
 | 강의구성안 | 위 Phase 2 Step 0~4 전체 수행 | 위 Phase 4 Step 0~4 전체 수행 (deep-research 방법론) |
-| 강의교안 | 위 "강의교안 탐색적 리서치" Step 0~4 수행 (교수법·발문·활동·평가 초점) | 브레인스토밍 기반 예시 자료, 보충 콘텐츠, 참고 문헌 |
+| 강의교안 | 위 "강의교안 탐색적 리서치" Step 0~4 수행 (교수법·발문·활동·평가 초점) | 위 "강의교안 심화 리서치" Step 0~4 수행 (교수법 사례·발문·활동·평가 초점, deep-research 방법론) |

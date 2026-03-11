@@ -138,7 +138,37 @@ $ARGUMENTS
 
 ### Phase 6: 교안 작성 → writer-agent (섹션별 스크립트, 발문, 활동, 평가문항)
 
-<!-- TODO: Phase 6 구현 예정 -->
+**지시**: 레슨 플랜 설계와 이전 단계 산출물을 통합하여 최종 강의교안을 작성하세요.
+**입력 파일**:
+  - `{output_dir}/05_arch_lesson_plan.md` (분 단위 레슨 플랜 — 핵심 골격)
+  - `{output_dir}/01_input_data.json` (script_settings, inherited)
+  - `{output_dir}/03_brainstorm_result.md` (§2 발문, §3 활동, §4 사례, §5 평가)
+  - `{output_dir}/04_deep_research.md` (§8 활용 가이드)
+**참조 파일**:
+  - `{outline_dir}/06_write_lecture_outline.md` (코스 개요, 학습 목표, 시간표)
+  - `{outline_dir}/05_arch_architecture.md` (차시 간 연결 맵 — 전환 멘트용)
+**템플릿**: `.claude/templates/script-template.md`
+**산출물 위치**: `{output_dir}/` (06_write_script_draft.md, 06_write_lecture_script.md)
+**모드**: 최종 작성 — GAIDE 5단계 (Setup → Draft → Macro → Micro → Consolidation)
+**차시 내부 구조**: 교수 모델별 도입-전개-정리 + Gagné 사태 (모드별) + GRR
+**스크립트 상세도**: `script_detail_level`에 따라 밀도 조절 (full_script/semi_structured/bullet_notes)
+**분할 작업**: 작성 대상 차시 수 기준 자동 분할 (≤10: 단일, 11~25: 2분할, 26+: 3분할). Day 그룹을 경계로 사용. 중간 산출물: `06_write_script_chunk_N.md`
+**제약**: SLO정렬 + 시간합산 + 톤일관성 3중 검증 통과 필수
+**워크플로우**: Step 0(컨텍스트 로드) → Step 1(교안 메타+코스 개요) → Step 2(차시별 스크립트 [분할 가능]) → Step 3(검증·보강) → Step 4(최종 정제)
+**상세**: `.claude/agents/writer-agent/AGENT.md`의 "강의교안 작성 (Phase 6) 세부 워크플로우" 섹션 참조
+
+**조건부 분기**:
+- `script_detail_level = full_script` → 교수자 발화 전문, 예상 답변 포함, 활동 전체 절차
+- `script_detail_level = semi_structured` → 핵심 설명 단락형, 발문/전환 완전 문장, 활동 단계 목록
+- `script_detail_level = bullet_notes` → 불릿 중심, 발문만 완전 문장, 활동명+타이밍
+- `teaching_model = mixed` → 차시별 교수 모델에 따라 도입-전개-정리 구조 개별 적용
+- `gagne_display.mode = all_9` → 9사태 전체 라벨 표기
+- `gagne_display.mode = core_5` → 핵심 5사태만 라벨
+- `gagne_display.mode = none` → 라벨 생략, 수업 단계명만
+- `questioning_design.include = false` → 발문 블록 전체 생략
+- `questioning_design.include_expected_answers = true` → 발문에 예상 답변 포함
+- `formative_assessment.type = none` → 형성평가 블록 생략
+- `target_scope.type = "day"` → 지정 차시만 작성, 나머지 "scope 외" 표시
 
 ### Phase 7: 품질 검토 → review-agent (목표-활동-평가 정렬, 시간 배분)
 

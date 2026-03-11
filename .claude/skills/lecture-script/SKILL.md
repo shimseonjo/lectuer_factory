@@ -62,7 +62,14 @@ $ARGUMENTS
 
 ### Phase 2: 탐색적 리서치 → research-agent (교수법 사례, 유사 교안 벤치마킹)
 
-<!-- TODO: Phase 2 구현 예정 -->
+**지시**: 강의교안을 위한 탐색적 리서치를 수행하세요. 교수법 적용 사례, 발문 전략, 학습활동 설계, 형성평가 도구를 중심으로 리서치합니다.
+**입력 파일**: `{output_dir}/01_input_data.json`
+**참조 파일**: `{outline_dir}/02_explore_research.md` (구성안 Phase 2 산출물 — 주제 개요·트렌드·학습자 분석은 여기서 상속, 중복 수집하지 않음)
+**산출물 위치**: `{output_dir}/` (02_explore_plan.md, 02_explore_local.md, 02_explore_nblm.md, 02_explore_web.md, 02_explore_research.md)
+**모드**: 탐색적 (orientation) — 다른 강의의 구체적 교안 스크립트 전사 금지 (고착 효과 방지)
+**제약**: 총 웹 검색 15회 이내, NBLM 쿼리 노트북당 5회 이내
+**워크플로우**: Step 0(계획) → Step 1(로컬) → Step 2(NBLM) → Step 3(웹) → Step 4(통합)
+**상세**: `.claude/agents/research-agent/AGENT.md`의 "강의교안 탐색적 리서치" 섹션 참조
 
 ### Phase 3: 브레인스토밍 → brainstorm-agent (발문, 활동, 사례 구상)
 

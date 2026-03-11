@@ -815,9 +815,487 @@ python3 .claude/skills/deep-research/scripts/validate_report.py --report {output
 
 ---
 
+## 강의교안 탐색적 리서치 (Phase 2) 세부 워크플로우
+
+> 강의구성안 Phase 2와 동일한 Step 0~4 구조를 따르되, 리서치 초점을 **교수법 적용 패턴, 발문 전략, 학습활동 설계, 형성평가 도구**로 전환한다. 구성안 Phase 2에서 이미 수집된 주제 개요·트렌드·학습자 분석은 `01_outline/02_explore_research.md`에서 상속하고, 중복 수집하지 않는다.
+
+### 전체 흐름
+
+```
+Step 0: 입력 로드 + 리서치 계획 수립
+  │     01_input_data.json + 01_outline/02_explore_research.md → 02_explore_plan.md
+  │
+  ├── Step 1: 로컬 참고자료 분석 → 02_explore_local.md
+  │   (조건: local_folders 비어있으면 건너뜀)
+  │   (분석 관점: 교수법·발문·활동·평가 중심으로 재분석)
+  │
+  ├── Step 2: NotebookLM 소스 쿼리 → 02_explore_nblm.md
+  │   (조건: notebooklm_urls 비어있으면 건너뜀)
+  │   (질문 초점: 교수법 적용 사례, 활동 설계 참고, 발문 예시)
+  │
+  ├── Step 3: 인터넷 리서치 → 02_explore_web.md
+  │   (web-research 패턴: 계획 → 검색 → 심화)
+  │   (검색 초점: 교수 모델별 레슨 플랜, Gagne 적용 사례, 형성평가 도구)
+  │
+  └── Step 4: 교안 맥락 통합 → 02_explore_research.md
+      (5축 통합: 교수법 패턴, 발문 설계, 학습활동, 형성평가, 실생활 사례)
+```
+
+### 산출물 목록
+
+```
+{output_dir}/
+├── 02_explore_plan.md          # Step 0: 리서치 계획
+├── 02_explore_local.md         # Step 1: 로컬 참고자료 분석 결과 (교안 관점)
+├── 02_explore_nblm.md          # Step 2: NotebookLM 쿼리 결과 (교안 관점)
+├── 02_explore_web.md           # Step 3: 인터넷 리서치 결과
+└── 02_explore_research.md      # Step 4: 교안 맥락 통합 최종 산출물 ★
+```
+
+---
+
+### Step 0: 입력 로드 + 리서치 계획 수립
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | `{output_dir}/01_input_data.json`, `{outline_dir}/02_explore_research.md` |
+| 도구 | Read, Write |
+| 산출물 | `{output_dir}/02_explore_plan.md` |
+
+**동작**:
+
+1. `01_input_data.json` 읽기 — 핵심 필드 추출:
+   - 구성안 상속 필드: `topic`, `target_learner`, `learning_goals`, `keywords`, `prerequisites`, `reference_sources`, `sessions`, `course_structure`
+   - **교안 고유 필드** (리서치 방향 결정):
+     - `script_settings.teaching_model`: 교수 모델 (direct_instruction / pbl / flipped / mixed)
+     - `script_settings.activity_strategies`: 활동 전략 배열
+     - `script_settings.formative_assessment`: 형성평가 유형
+     - `script_settings.gagne_display`: Gagne 사태 적용 수준
+     - `script_settings.time_ratio`: 도입:전개:정리 비율
+     - `script_settings.questioning_design`: 발문 설계 설정
+     - `instructional_model_map`: 교수설계 모델 매핑 (primary_model, grr_focus, bloom_question_pattern)
+
+2. `01_outline/02_explore_research.md` 스캔 — 이미 커버된 영역 식별:
+   - §1 주제 개요: 주제 본질·범위 → **상속** (재수집 불필요)
+   - §2 학습자 분석: 학습자 배경·수준 → **상속** (교안 관점 심화만)
+   - §3 트렌드: 최신 동향 → **상속** (재수집 불필요)
+   - §5 핵심 도전과제: 학습 장벽·오해 → **상속** (교안 관점 심화만)
+   - §4 벤치마킹: 유사 강의 접근법 → **교안 관점으로 재탐색** (교수법·활동 중심)
+   - §7 리서치 인사이트 → **참고** (Phase 3 시드로 확장)
+
+3. **교수 모델에 따라 리서치 질문 분기 도출** (3~5개):
+
+   **공통 질문** (모든 교수 모델):
+   - "이 주제의 효과적인 교수법 적용 사례는?"
+   - "학습자 수준에 맞는 발문 전략(Bloom's 기반)은?"
+   - "형성평가를 수업 흐름에 자연스럽게 통합하는 방법은?"
+
+   **직접교수법 (direct_instruction)** 추가 질문:
+   - "Hunter 6단계를 {topic}에 적용한 레슨 플랜 사례는?"
+   - "시범(I Do)→안내연습(We Do)→독립연습(You Do) 전환 시 효과적인 스캐폴딩 기법은?"
+   - "직접교수법에서 L1~L2 도입 발문 → L3~L4 전개 발문으로 상승하는 발문 패턴은?"
+
+   **PBL** 추가 질문:
+   - "{topic} 관련 실세계 문제 시나리오 설계 사례는?"
+   - "PBL에서 학습자 탐구를 촉진하는 발문(L4~L5) 패턴은?"
+   - "동료평가·루브릭 기반 산출물 평가 도구는?"
+
+   **플립러닝 (flipped)** 추가 질문:
+   - "{topic}의 효과적인 사전학습 자료 설계 사례는?"
+   - "사전학습 확인 → 교실 심화 활동으로 연결하는 Before→During 전환 패턴은?"
+   - "사전-사후 학습을 연결하는 발문(L2~L3 → L4~L5) 설계 사례는?"
+
+   **혼합 (mixed)** 추가 질문:
+   - 위 3개 모델의 기본 질문 모두 포함
+   - "차시 간 교수 모델 전환 시 학습자 혼란을 방지하는 전략은?"
+
+4. **서브토픽 분류** (3~5개) — 교수 모델에 맞춤:
+
+   | 서브토픽 | 검색 목적 | 검색 예산 |
+   |---------|----------|----------|
+   | 교수법 적용 패턴 | 교수 모델별 레슨 플랜·수업 설계 사례 | 3~4회 |
+   | 발문·대화 전략 | Bloom's 수준별 발문 사례, 교수 모델별 발문 패턴 | 3~4회 |
+   | 학습활동·실습 설계 | 활동 전략별 효과적 설계, GRR 적용 활동 | 3~4회 |
+   | 형성평가 도구 | 교수 모델×형성평가 유형별 도구·사례 | 2~3회 |
+   | 실생활 사례·보충자료 | 학습자 관심사와 연결되는 사례, 산업 활용 | 2~3회 |
+
+5. `02_explore_plan.md` 작성:
+   - 교수 모델 및 교안 설정 요약
+   - 구성안 Phase 2에서 상속하는 영역 목록
+   - 리서치 질문 목록 (교수 모델별 분기 명시)
+   - 서브토픽별 검색 예산 배정
+   - 자료원별 검색 전략 (로컬/NBLM/웹)
+
+---
+
+### Step 1: 로컬 참고자료 분석 (교안 관점)
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | `{output_dir}/01_input_data.json` → `inherited.reference_sources.local_folders` (폴더 경로 배열) |
+| 참조 | `{outline_dir}/02_explore_local.md` (구성안 Phase 2의 로컬 분석 — 인덱스 참조용) |
+| 도구 | Glob, Read, Bash |
+| 산출물 | `{output_dir}/02_explore_local.md` |
+| 조건 | `local_folders`가 빈 배열이면 **건너뜀** |
+
+#### 확장자별 읽기 전략 (구성안 Phase 2와 동일)
+
+| 확장자 | 읽기 방법 | 비고 |
+|--------|----------|------|
+| `.md` `.txt` | Read 도구 직접 읽기 | |
+| `.pdf` (≤20p) | `Read(pages="1-20")` | Read 도구 내장 PDF 지원 |
+| `.pdf` (>20p) | `Bash: pdftotext {file} -` | pdftotext 설치됨 (poppler) |
+| `.pptx` | `Bash: python3 -c "..."` (구성안 Phase 2 인라인 스크립트 동일) | python-pptx v1.0.2 설치됨 |
+| `.docx` | `Bash: pandoc {file} -t plain` | pandoc v2.12 설치됨 |
+
+#### PPTX 읽기 인라인 스크립트 (구성안 Phase 2와 동일)
+
+```bash
+python3 -c "
+from pptx import Presentation; import sys
+prs = Presentation(sys.argv[1])
+for i, slide in enumerate(prs.slides, 1):
+    title = slide.shapes.title.text if slide.shapes.title else '(제목 없음)'
+    body = ' '.join(s.text for s in slide.shapes if hasattr(s,'text') and s != slide.shapes.title)
+    print(f'## 슬라이드 {i}: {title}')
+    if body.strip(): print(body[:500])
+    print()
+" "{파일경로}"
+```
+
+#### 동작
+
+1. `01_outline/02_explore_local.md`를 **인덱스로만** 참조:
+   - 어떤 파일이 이미 분석되었는지 확인 (파일 목록)
+   - 구성안에서의 요약 내용은 참고하되, 교안 관점에서 원본을 직접 재분석
+
+2. 각 `local_folder`에 `Glob("**/*.{md,txt,pdf,pptx,docx}")` 실행
+
+3. 파일 10개 초과 시 파일명/크기 기준 우선순위 선별
+
+4. 확장자별 분기로 읽기 실행
+
+5. **분석 관점 변경** — 구성안과의 핵심 차이:
+
+   | 구성안 Phase 2 관점 | 교안 Phase 2 관점 |
+   |-------------------|-----------------|
+   | 주제의 본질·범위·최신 동향 | 교수법 적용 패턴·사례 |
+   | 학습자 배경·수준·동기 | 학습 활동 설계 참고 |
+   | 산업 활용·트렌드 | 발문 예시·대화 패턴 |
+   | 유사 강의 커리큘럼 구조 | 형성평가 도구·방법 |
+
+   파일별 분석 시 추출할 핵심 포인트:
+   - 교수법/수업 설계 관련 내용 (교수 모델 적용 사례)
+   - 발문·질의 예시 (Bloom's 수준 태깅)
+   - 학습 활동·실습 아이디어 (활동 유형 분류)
+   - 평가 도구·루브릭 (형성평가 유형 매칭)
+   - 실생활 사례·시나리오 (PBL 문제 시나리오 후보)
+
+6. 파일별 핵심 내용 요약 (200~400자, 교안 관점)
+
+7. `02_explore_local.md` 작성
+
+---
+
+### Step 2: NotebookLM 소스 쿼리 (교안 관점)
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | `{output_dir}/01_input_data.json` → `inherited.reference_sources.notebooklm_urls` (URL 배열) |
+| 도구 | Bash (NBLM 스킬 CLI) |
+| 산출물 | `{output_dir}/02_explore_nblm.md` |
+| 조건 | `notebooklm_urls`가 빈 배열이면 **건너뜀** |
+| 제약 | 노트북당 최대 5쿼리 (일일 50쿼리 제한 고려) |
+
+#### NBLM 호출 인터페이스 (구성안 Phase 2와 동일)
+
+```bash
+# 1. 노트북 활성화 (선택 — 같은 노트북에 여러 번 질문할 때 편리)
+python3 .claude/skills/nblm/scripts/run.py notebook_manager.py activate --id {notebook_id}
+
+# 2. 질문 (질문은 위치인자, --notebook-id로 대상 노트북 지정)
+python3 .claude/skills/nblm/scripts/run.py nblm_cli.py ask "{질문}" --notebook-id {notebook_id}
+
+# 3. 소스 목록 확인
+python3 .claude/skills/nblm/scripts/run.py nblm_cli.py sources --id {notebook_id}
+```
+
+> **주의**: `ask` 명령에서 질문은 따옴표로 감싼 **위치인자**이고, `--notebook-id`는 옵션이다.
+> 활성 노트북이 설정되어 있으면 `--notebook-id` 생략 가능.
+
+#### 교안용 질문 생성 전략
+
+`02_explore_plan.md`의 리서치 질문을 NBLM용으로 변환 — **교수법·활동·발문·평가 초점**:
+
+1. "이 자료에서 {topic}을 가르치는 교수법이나 수업 설계 사례가 있는가?"
+2. "이 자료에서 {teaching_model} 모델에 적합한 수업 활동 예시가 있는가?"
+3. "이 자료에서 학습자에게 효과적인 발문이나 질의 패턴이 있는가?"
+4. "이 자료에서 형성평가 도구나 학습 확인 방법이 있는가?"
+5. (필요시) "이 자료에서 {topic} 관련 실생활 사례나 문제 시나리오가 있는가?"
+
+#### 후속 질문 프로토콜 (구성안 Phase 2와 동일)
+
+NBLM 응답 끝에 "Is that ALL you need to know?" 수신 시:
+- 원래 리서치 질문 대비 정보 충분성 판단
+- 부족하면 추가 쿼리 실행 (쿼리 예산 내)
+- 충분하면 다음 단계로 진행
+
+---
+
+### Step 3: 인터넷 리서치 (web-research 패턴, 교수법 중심)
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | `02_explore_plan.md`, `01_input_data.json` |
+| 도구 | WebSearch, WebFetch, Write |
+| 산출물 | `{output_dir}/02_explore_web.md` |
+| 제약 | 총 웹 검색 최대 15회 |
+
+#### 3a. 서브토픽별 검색 예산 배정 (교수 모델 중심)
+
+| 서브토픽 | 검색 목적 | 검색 예산 |
+|---------|----------|----------|
+| 교수법 적용 패턴 | 교수 모델별 레슨 플랜 사례, 수업 설계 패턴 | 3~4회 |
+| 발문·대화 전략 | Bloom's 수준별 발문, 교수 모델별 발문 패턴 | 3~4회 |
+| 학습활동·실습 설계 | GRR 기반 활동, 활동 전략별 도구 | 3~4회 |
+| 형성평가 도구 | 교수 모델×평가 유형 조합, 도구 가이드 | 2~3회 |
+| 실생활 사례·보충자료 | 학습자 관심사 연결 사례, 산업 활용 | 2~3회 |
+
+#### 3b. 서브토픽별 WebSearch (실행)
+
+각 서브토픽당 할당 예산 내에서 한국어 + 영어 병행 검색:
+
+```
+검색어 예시 — 교수법 적용 패턴:
+- "{topic} lesson plan {teaching_model}"
+- "{topic} 수업 설계 {교수 모델 한국어명}"
+- "Gagne nine events {topic} example"
+- "Hunter model lesson plan {topic}"  (직접교수법 시)
+- "PBL scenario design {topic}"  (PBL 시)
+- "flipped classroom activity {topic}"  (플립러닝 시)
+
+검색어 예시 — 발문·대화 전략:
+- "Bloom's taxonomy questioning {topic}"
+- "{topic} 수업 발문 예시"
+- "{teaching_model} questioning strategy"
+- "higher order thinking questions {topic}"
+
+검색어 예시 — 학습활동·실습 설계:
+- "{topic} hands-on activity design"
+- "{topic} 실습 활동 설계"
+- "gradual release of responsibility {topic}"
+- "{activity_strategy} {topic} classroom"
+
+검색어 예시 — 형성평가 도구:
+- "{teaching_model} formative assessment tools"
+- "{formative_assessment_type} examples classroom"
+- "exit ticket {topic} examples"
+- "형성평가 도구 {topic}"
+
+검색어 예시 — 실생활 사례·보충자료:
+- "{topic} real world application example"
+- "{topic} 실생활 사례 교육"
+- "{topic} case study for students"
+```
+
+#### 3c. 주요 URL WebFetch (심화)
+
+검색 결과에서 고품질 소스 3~5개 선별 후 WebFetch:
+
+선별 기준 (교안 맥락):
+- 레슨 플랜/교안 예시가 포함된 교육 사이트
+- 대학/교육기관의 교수법 가이드
+- Gagne/Hunter/PBL/플립러닝 적용 사례 문서
+- 형성평가 도구 가이드 (Edutopia, ASCD 등)
+- 최근 1년 이내 교수법 블로그/논문
+
+#### 고착 효과 방지 필터 (교안 버전)
+
+수집 시 반드시 적용:
+
+```
+허용 (O):
+  "이 유형의 발문이 학습자의 분석적 사고를 촉진한다"
+  "시범 후 안내연습으로 전환할 때 스캐폴딩이 효과적이다"
+  "PBL에서 동료평가 루브릭을 활용하면 메타인지가 향상된다"
+  "Exit Ticket으로 3-2-1 형식을 사용하면 빠른 점검이 가능하다"
+
+금지 (X):
+  "1차시 도입에서 강사는 이렇게 말한다: '안녕하세요...' "  ← 구체적 교안 스크립트 전사
+  "이 교안의 2차시 전개부는 다음과 같다: ..."             ← 특정 강의의 차시별 세부 내용
+  "이 강사는 PPT 3번 슬라이드에서..."                     ← 특정 강의 자료 구체 전사
+
+변환 규칙:
+  "1차시에서 이 발문을 사용하고..." → "이 유형의 발문이 효과적이다"
+  "이 교안의 도입부 5분은..." → "도입 단계에서 이런 접근법이 효과적이다"
+  "2차시 실습 가이드: Step 1~5" → "단계적 실습 설계 패턴이 활용된다"
+```
+
+---
+
+### Step 4: 교안 맥락 통합 → 02_explore_research.md
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | 01_input_data.json, 01_outline/02_explore_research.md, 02_explore_plan.md, 02_explore_local.md, 02_explore_nblm.md, 02_explore_web.md |
+| 도구 | Read, Write |
+| 산출물 | `{output_dir}/02_explore_research.md` ★ 최종 산출물 |
+
+#### 4-1. 자료원별 역할과 신뢰도
+
+| 자료원 | 역할 | 신뢰도 |
+|--------|------|--------|
+| **01_input_data.json** | 설계 기준선 — 모든 판단의 절대 기준 | ★★★ 절대 기준 |
+| **01_outline/02_explore_research.md** | 구성안 리서치 상속 — 주제·학습자·트렌드 기초 | ★★★ 높음 |
+| **로컬 참고자료** | 사용자 선별 핵심 자료 (교안 관점 재분석) | ★★★ 높음 |
+| **NotebookLM** | 사용자 선별 소스 기반 검증된 답변 | ★★★ 높음 |
+| **인터넷 리서치** | 교수법 사례, 도구, 외부 벤치마킹 | ★☆☆~★★☆ 가변 |
+
+#### 4-2. 통합 알고리즘 (5단계) — 교안 맥락 재설계
+
+**단계 1 — 주제 축(Theme Axis) 추출 (교안 버전)**
+
+`01_input_data.json`의 `script_settings`에서 교안 맥락의 5개 주제 축을 도출:
+
+| 축 | 질문 | 매핑 섹션 |
+|----|------|----------|
+| A: 교수법 패턴 | "이 주제를 어떤 교수법으로 가르칠 수 있는가?" | §1 교수법 적용 현황 |
+| B: 발문 설계 | "어떤 발문이 학습을 촉진하는가?" | §3 발문·대화 전략 |
+| C: 학습활동/실습 | "어떤 활동이 효과적인가?" | §4 학습활동·실습 벤치마킹 |
+| D: 형성평가 도구 | "학습 성과를 어떻게 확인하는가?" | §5 형성평가 도구·방법 |
+| E: 실생활 사례/자료 | "어떤 사례가 학습자에게 와닿는가?" | §6 실생활 사례 및 보충 자료 |
+
+**단계 2 — 자료원별 인사이트를 주제 축에 배정**
+
+각 findings 파일 + 구성안 상속 자료를 읽으며 인사이트를 축에 분류:
+
+```
+               축 A  축 B  축 C  축 D  축 E
+구성안 상속     ○           ○           ●    ← §1·§2·§3·§5 상속
+로컬 자료      ●     ○     ●     ○     ○    ← 교안 관점 재분석
+NBLM          ●     ○     ○     ○     ●
+인터넷         ●     ●     ●     ●     ○
+input_data    기준   기준   기준   기준
+```
+`●` = 주 기여, `○` = 보조, (공백) = 해당 없음
+
+**단계 3 — 교차 검증 및 충돌 해결** (구성안 Phase 2와 동일 프로토콜)
+
+같은 축에 배정된 인사이트들을 비교:
+
+| 상황 | 처리 | 태그 |
+|------|------|------|
+| **일치** — 2+ 소스 동의 | 통합 서술, 모든 출처 명시 | `[검증됨]` |
+| **보완** — 각 소스가 다른 측면 | 병렬 기술, 각 출처 명시 | (태그 없음) |
+| **충돌** — 소스 간 모순 | 아래 우선순위로 해결, 양쪽 기록 | `[주의: 불일치]` |
+| **단독** — 1소스에만 존재 | 출처 명시 | `[미검증]` |
+
+충돌 해결 우선순위: `input_data > 로컬 = NBLM > 웹`
+
+**단계 4 — 고착 효과 필터링 (교안 버전)**
+
+통합 결과에서 다음 패턴을 검출·제거·변환:
+
+| 패턴 | 처리 |
+|------|------|
+| 다른 강의의 교안 스크립트 전사 | **제거** |
+| 특정 강의의 차시별 세부 교안 내용 | **제거** |
+| "N차시 도입에서 강사는 이렇게 말한다..." | **제거** |
+| 교수법 접근 방식·패턴 | **유지** |
+| 활동 유형·설계 원칙 | **유지** |
+| 발문 패턴·Bloom's 수준별 예시 | **유지** |
+| 형성평가 도구 종류·적용 가이드 | **유지** |
+| 실생활 사례 (일반화된 형태) | **유지** |
+
+**단계 5 — 구조화된 문서 작성**
+
+축 → 섹션 매핑으로 `02_explore_research.md` 작성.
+
+각 섹션 작성 규칙:
+- 검증 태그 유지 (`[검증됨]`, `[미검증]`, `[주의]`)
+- 인사이트마다 출처 번호 `[1]`, `[2]`... 부여
+- 섹션 말미에 "시사점" 1~2문장 (Phase 3 브레인스토밍 프라이밍용)
+
+§7 리서치 인사이트 작성 규칙:
+- 5~10개 방향성 인사이트
+- "~라는 교수법 패턴/발문 전략/활동 설계 접근이 있다" 형식
+- 구체적 교안 스크립트(해결책) 제외
+- 각 인사이트에 관련 `learning_goal` 태깅 + **Bloom's 수준 기초 마킹**
+- Phase 3 brainstorm-agent의 발산 초점(발문 설계, 학습활동, 실생활 사례)에 대한 시드 역할
+
+#### 4-3. 02_explore_research.md 산출물 구조 (교안 버전)
+
+```markdown
+# 탐색적 리서치 결과 (교안)
+
+## 메타데이터
+- 강의 주제: {topic}
+- 교수 모델: {teaching_model.label}
+- 리서치 일자: {date}
+- 자료원 현황: 구성안 상속 1건, 로컬 {N}건, NBLM {N}건, 웹 {N}건
+- 리서치 모드: 탐색적 (orientation) — 고착 효과 방지 필터 적용
+- 리서치 초점: 교수법 패턴, 발문 전략, 학습활동 설계, 형성평가 도구
+
+## 1. 교수법 적용 현황
+(축 A. 교수 모델별 적용 사례, 수업 단계별 접근법, GRR 적용 패턴)
+- 교수 모델: {teaching_model.label} → {instructional_model_map.primary_model}
+- 주요 사례 요약
+- Hunter/PBL/플립러닝 단계별 적용 포인트
+- 시사점: ...
+
+## 2. 학습자 프로필 심화
+(구성안 02_explore_research.md §2에서 상속 + 교안 관점 심화)
+- 학습자 프로필 기초 (상속)
+- 학습 장벽: 교수법 적용 시 예상되는 어려움
+- 선수 지식 수준별 차별화 지점
+- 시사점: ...
+
+## 3. 발문·대화 전략
+(축 B. Bloom's 수준별 사례, 교수 모델별 발문 패턴)
+- Bloom's 수준별 발문 예시 (L1~L6)
+- 교수 모델별 단계별 발문 수준 권장 (instructional_model_map.bloom_question_pattern)
+- 소크라테스식 질의, 개방형/폐쇄형 발문 사용법
+- 시사점: ...
+
+## 4. 학습활동·실습 벤치마킹
+(축 C. 활동 유형별 효과, 도구·자료, GRR 단계별 활동)
+- 활동 전략별 사례 ({activity_strategies} 각각)
+- GRR 관점: I Do / We Do / You Do 각 단계의 활동 설계
+- 활동 도구·자료 목록
+- 시사점: ...
+
+## 5. 형성평가 도구·방법
+(축 D. 유형별 사례, 교수 모델별 추천)
+- 선택된 형성평가 유형 ({formative_assessment.label}) 적용 사례
+- 교수 모델 × 형성평가 유형 추천 도구 (Lecture_Creation_Guide §E-3 참조)
+- SLO-평가 연결 패턴
+- 시사점: ...
+
+## 6. 실생활 사례 및 보충 자료
+(축 E. 학습자 관심사 연결, 산업 활용, 시나리오 후보)
+- {topic} 관련 실생활 적용 사례
+- 학습자 수준({target_learner.level})에 적합한 사례 유형
+- PBL 문제 시나리오 후보 (PBL 선택 시)
+- 시사점: ...
+
+## 7. 리서치 인사이트 (Phase 3 브레인스토밍용)
+(5~10개 방향성 인사이트)
+- "~라는 교수법 패턴/발문 전략/활동 설계 접근이 있다" 형식
+- 각 인사이트에 관련 learning_goal 태깅 + Bloom's 수준 기초 마킹
+- 구체적 교안 스크립트(해결책) 제외
+- Phase 3 발산 초점: 발문 설계(Bloom's 기반), 학습활동 아이디어, 실생활 사례 구상
+
+## 출처 목록
+| # | 출처 | 유형 | 접근일자 | 신뢰도 |
+|---|------|------|---------|--------|
+| [1] | {URL/파일경로} | 구성안 상속/로컬/NBLM/웹 | {날짜} | [검증됨/미검증] |
+```
+
+---
+
 ## 워크플로우별 동작
 
 | 워크플로우 | 탐색적 리서치 (Phase 2) | 심화 리서치 (Phase 4) |
 |-----------|----------------------|---------------------|
 | 강의구성안 | 위 Phase 2 Step 0~4 전체 수행 | 위 Phase 4 Step 0~4 전체 수행 (deep-research 방법론) |
-| 강의교안 | 참고자료 분석 + 교수법 사례, 유사 교안 벤치마킹 | 브레인스토밍 기반 예시 자료, 보충 콘텐츠, 참고 문헌 |
+| 강의교안 | 위 "강의교안 탐색적 리서치" Step 0~4 수행 (교수법·발문·활동·평가 초점) | 브레인스토밍 기반 예시 자료, 보충 콘텐츠, 참고 문헌 |

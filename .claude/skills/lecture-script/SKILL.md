@@ -73,7 +73,23 @@ $ARGUMENTS
 
 ### Phase 3: 브레인스토밍 → brainstorm-agent (발문, 활동, 사례 구상)
 
-<!-- TODO: Phase 3 구현 예정 -->
+**지시**: 교안 작성을 위한 브레인스토밍을 수행하세요. 발문 설계(Bloom's 기반), 학습활동 아이디어(GRR×Gagne), 실생활 사례, 형성평가 문항을 발산·수렴하고, SLO-활동-발문-평가 정렬 매트릭스를 생성합니다.
+**입력 파일**:
+  - `{output_dir}/01_input_data.json` (교수 모델, 활동 전략, 형성평가, Gagne 설정)
+  - `{output_dir}/02_explore_research.md` (교수법 리서치 §1~§7 인사이트)
+**참조 파일**:
+  - `{outline_dir}/03_brainstorm_result.md` (페르소나 상속 — §3에서 로드, 신규 생성 안 함)
+  - `{outline_dir}/06_write_lecture_outline.md` (차시별 BOPPPS 구조, SLO)
+**산출물 위치**: `{output_dir}/` (03_brainstorm_divergent.md, 03_brainstorm_convergent.md, 03_brainstorm_review.md, 03_brainstorm_result.md)
+**워크플로우**: Step 0(맥락 분석) → Step 1(발산) → Step 2(수렴·매핑) → Step 3(다관점 검증) → Step 4(통합)
+**상세**: `.claude/agents/brainstorm-agent/AGENT.md`의 "강의교안 브레인스토밍 (Phase 3) 세부 워크플로우" 섹션 참조
+
+**조건부 분기**:
+- `questioning_design.include = false` → 축 1(발문) 생략
+- `formative_assessment.type = none` → 축 5(평가) 생략
+- `teaching_model = pbl` → 축 4(문제 시나리오) 추가
+- `gagne_display.mode = none` → Step 2에서 Gagne 매핑 생략, GRR만 수행
+- `teaching_model = mixed` → 차시별 교수 모델 분기하여 발문 배치 패턴 개별 적용
 
 ### Phase 4: 심화 리서치 → research-agent (브레인스토밍 기반 예시·보충 콘텐츠 수집)
 
@@ -98,7 +114,10 @@ lectures/YYYY-MM-DD_{강의명}/02_script/
 ├── 01_input_data.json              # Phase 1: 구성안 로드 + 교안 설정
 ├── 02_explore_plan.md             # Phase 2: 탐색적 리서치 계획
 ├── 02_explore_research.md         # Phase 2: 리서치 결과
-├── 03_brainstorm_result.md        # Phase 3: 브레인스토밍 결과
+├── 03_brainstorm_divergent.md    # Phase 3: 발산적 탐색 (Step 1)
+├── 03_brainstorm_convergent.md   # Phase 3: 수렴 및 매핑 (Step 2)
+├── 03_brainstorm_review.md       # Phase 3: 다관점 검증 (Step 3)
+├── 03_brainstorm_result.md        # Phase 3: 브레인스토밍 최종 통합 ★ (Step 4)
 ├── 04_deep_research.md            # Phase 4: 심화 리서치
 ├── 05_arch_lesson_plan.md         # Phase 5: 차시별 레슨 플랜 구조 설계
 ├── 06_write_script_draft.md       # Phase 6: 교안 초안 (중간)

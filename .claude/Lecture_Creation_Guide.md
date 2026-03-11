@@ -214,7 +214,7 @@ writer-agent가 `06_write_lecture_outline.md` 내부에 `§시간표` 섹션을 
 |-------|------|---------|----------|
 | 1 | 입력 수집 | input-agent | 구성안 자동 로드 + 교수 모델·활동 전략·형성평가·시간 비율 등 6개 필수질문 수집 |
 | 2 | 탐색적 리서치 | research-agent | 교수법 사례, Gagne/Hunter 적용 패턴, 발문·실습·형성평가 도구 사례 탐색 |
-| 3 | 브레인스토밍 | brainstorm-agent | 발문 설계(Bloom's 기반), 학습활동 아이디어, 실생활 사례 구상 |
+| 3 | 브레인스토밍 | brainstorm-agent | 조건부 3~5축 발산(발문·활동·사례·PBL시나리오·평가), Bloom's 발문 배치, Gagne-GRR 매핑, SLO 정렬, 페르소나 시뮬레이션, 다관점 검증 |
 | 4 | 심화 리서치 | research-agent | 브레인스토밍 기반 예시 자료, 보충 콘텐츠, 참고 문헌 |
 | 5 | 교안 구조 설계 | architecture-agent | 교수 모델별 도입-전개-정리 구조, Gagne 사태 배치, SLO-평가 매핑, 시간표 설계 |
 | 6 | 교안 작성 | writer-agent | 스크립트 상세도별 작성, 발문·활동·평가문항, 분할 작업(chunk) 지원 |
@@ -270,6 +270,33 @@ writer-agent가 `06_write_lecture_outline.md` 내부에 `§시간표` 섹션을 
 - 고착 효과 필터 (교안 버전): 다른 강의의 교안 스크립트 전사 금지, 교수법 패턴·활동 유형·발문 패턴은 유지
 - §7 리서치 인사이트에 Bloom's 수준 기초 마킹 추가 (Phase 3 발문 설계 브레인스토밍용)
 - 상세 워크플로우: `.claude/agents/research-agent/AGENT.md`의 "강의교안 탐색적 리서치" 섹션 참조
+
+#### Phase 3: 브레인스토밍 상세
+
+**핵심 전환**: 구성안 "무엇을 가르칠까" → 교안 **"어떻게 가르칠까"**
+
+**입력 4개**: `02_script/01_input_data.json` + `02_script/02_explore_research.md` + `01_outline/03_brainstorm_result.md`(페르소나 상속) + `01_outline/06_write_lecture_outline.md`(차시·SLO)
+
+**조건부 브레인스토밍 축 (3~5개)**:
+
+| 축 | 내용 | 생성 조건 |
+|----|------|----------|
+| 1 | **발문 설계** — Bloom's L1~L6별 발문 풀 | `questioning_design.include = true` |
+| 2 | **학습활동 아이디어** — GRR×Gagne 기반 | 항상 |
+| 3 | **실생활 사례 풀** — 다중 맥락 탐색 | 항상 |
+| 4 | **문제 시나리오 설계** — PBL 문제 상황 | `teaching_model = pbl` |
+| 5 | **형성평가 문항 풀** — SLO 매핑 기반 | `formative_assessment ≠ none` |
+
+**5단계 워크플로우**: Step 0(맥락 분석·조건부 축 결정) → Step 1(발산 — 축별 15~25개 아이디어) → Step 2(수렴 — Bloom's 배치, Gagne-GRR 매핑, SLO 정렬, 페르소나 시뮬레이션) → Step 3(다관점 검증 — 교수법 회의론자·학습자 대리인·활동 정렬 중재자) → Step 4(최종 통합 — 11개 섹션)
+
+**핵심 수렴 매트릭스 3개**:
+1. **발문 수업 단계 배치** — 교수 모델별 Bloom's 패턴에 따라 도입/전개/정리 배치
+2. **활동-Gagne-GRR 매핑** — Gagne 사태 × GRR 단계 교차 매트릭스
+3. **SLO-활동-발문-평가 정렬** — 모든 SLO에 활동+평가 커버리지 확인
+
+**산출물**: `03_brainstorm_divergent.md` → `03_brainstorm_convergent.md` → `03_brainstorm_review.md` → `03_brainstorm_result.md` (★ 최종)
+
+상세 워크플로우: `.claude/agents/brainstorm-agent/AGENT.md`의 "강의교안 브레인스토밍 (Phase 3) 세부 워크플로우" 섹션 참조
 
 #### 교수 모델별 교안 구조
 

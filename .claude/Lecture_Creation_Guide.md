@@ -439,7 +439,7 @@ lectures/
     │   ├── 01_input_data.json                   # Phase 1: 구성안 로드 + 교안 설정
     │   ├── 02_explore_plan.md                   # Phase 2: 탐색적 리서치 계획
     │   ├── 02_explore_research.md               # Phase 2: 리서치 결과
-    │   ├── 03_brainstorm_result.md              # Phase 3: 브레인스토밍 결과
+    │   ├── 03_brainstorm_result.md              # Phase 3: 브레인스토밍 최종 ★
     │   ├── 04_deep_research.md                  # Phase 4: 심화 리서치
     │   ├── 05_arch_lesson_plan.md               # Phase 5: 차시별 레슨 플랜 구조 설계
     │   ├── 06_write_script_draft.md             # Phase 6: 교안 초안 (중간)
@@ -458,6 +458,15 @@ lectures/
 03_brainstorm_convergent.md      # Phase 3 중간: 수렴 및 매핑
 03_brainstorm_review.md          # Phase 3 중간: 다관점 검증
 06_write_outline_draft.md        # Phase 6 중간: 구성안 초안
+```
+
+**중간 산출물 명명 예시** (02_script/ 내부):
+
+```
+03_brainstorm_divergent.md       # Phase 3 중간: 발산적 탐색 (Step 1)
+03_brainstorm_convergent.md      # Phase 3 중간: 수렴 및 매핑 (Step 2)
+03_brainstorm_review.md          # Phase 3 중간: 다관점 검증 (Step 3)
+06_write_script_draft.md         # Phase 6 중간: 교안 초안
 ```
 
 ### 공통 규칙

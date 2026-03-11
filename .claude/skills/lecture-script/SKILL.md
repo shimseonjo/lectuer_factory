@@ -172,7 +172,91 @@ $ARGUMENTS
 
 ### Phase 7: 품질 검토 → review-agent (목표-활동-평가 정렬, 시간 배분)
 
-<!-- TODO: Phase 7 구현 예정 -->
+**지시**: 최종 강의교안과 전체 파이프라인 산출물을 독립적 외부 검토자 관점에서 품질 검증하세요.
+**입력 파일**:
+  - `{output_dir}/06_write_lecture_script.md` (주 검토 대상)
+  - `{output_dir}/01_input_data.json`
+  - `{output_dir}/05_arch_lesson_plan.md`
+  - `{output_dir}/03_brainstorm_result.md`
+  - `{output_dir}/04_deep_research.md`
+**참조 파일**: `{outline_dir}/06_write_lecture_outline.md` (코스 레벨 정합성)
+**산출물 위치**: `{output_dir}/07_review_quality.md`
+**검토 프레임워크**: QM Rubric 7th Ed. (기준 3·5 중심) + 5영역 가중치 체크리스트(20/25/20/20/15)
+**판정 체계**: APPROVED(8.0+) / APPROVED WITH NOTES(6.0~7.9) / REVISE(4.0~5.9) / REVISE MAJOR(0~3.9)
+**자동 REVISE**: QM 기준 3·5 미충족, 영역 1(정렬)·2(전개 완성도) 평균 5.0 미만
+**워크플로우**: Step 0(컨텍스트 로드) → Step 1(QM 적합성) → Step 2(5영역 심층) → Step 3(판정+작성)
+**상세**: `.claude/agents/review-agent/AGENT.md`의 "강의교안 품질 검토" 섹션 참조
+
+**조건부 분기**:
+- `questioning_design.include == false` → 영역 3(발문 20%) 가중치를 영역 2(+10%), 영역 4(+10%)로 재배분
+- `formative_assessment.type == "none"` → 형성평가 관련 항목(1-3, 4-5) SKIP
+- `gagne_display.mode == "none"` → Gagné 완성도 항목(2-3) SKIP
+- `teaching_model` → 교수 모델별 구조 검증 기준 분기 (직접교수법/PBL/플립러닝/혼합)
+
+### Phase 7 이후: 판정 분기 처리
+
+Phase 7 완료 후, `07_review_quality.md`를 읽어 판정에 따라 분기한다.
+
+```
+revision_count = 0
+
+[Phase 7 완료]
+  │
+  ├─ Read: {output_dir}/07_review_quality.md → verdict, restart_phase 파싱
+  │
+  ├─ APPROVED (8.0+):
+  │     → 사용자에게 완료 보고. 워크플로우 종료.
+  │
+  ├─ APPROVED WITH NOTES (6.0~7.9):
+  │     → 사용자에게 §4 수정 지시(P3 항목) 표시
+  │     → AskUserQuestion: "권고 사항을 반영하시겠습니까?"
+  │     → "예": writer-agent 경량 수정 (P3만, 재검토 없음) → 종료
+  │     → "아니오": 종료
+  │
+  ├─ REVISE (4.0~5.9) / REVISE MAJOR (0~3.9):
+  │     → IF revision_count >= 1:
+  │         STOP & CONSULT — 사용자에게 1차·2차 수정 지시 비교 보고
+  │         AskUserQuestion으로 사용자 판단 대기 → 종료 또는 수동 재실행
+  │     → revision_count += 1
+  │     → §6-1 "권장 재실행 시작 Phase" 파싱 → restart_phase
+  │
+  │     → IF restart_phase == 6:
+  │         Agent → writer-agent (수정 모드)
+  │     → IF restart_phase == 5:
+  │         Agent → architecture-agent (수정 모드) → writer-agent (재작성)
+  │     → IF restart_phase == 4:
+  │         Agent → research-agent (보강 모드) → architecture-agent (수정) → writer-agent (재작성)
+  │
+  │     → Phase 7 재실행 (review-agent)
+  │     → 분기 로직 처음으로 (revision_count 확인)
+```
+
+**수정 모드 지시 템플릿**:
+
+**writer-agent 수정 모드 (교안)**:
+```
+지시: 07_review_quality.md의 수정 지시를 반영하여 06_write_lecture_script.md를 수정하세요.
+규칙: (1) P0·P1 반드시 반영 (2) P2 가능 범위 반영 (3) §6-3 강점 보호
+      (4) 수정 범위 외 섹션 변경 금지 (5) 06_write_lecture_script.md 직접 수정 (06_write_script_draft.md 미갱신)
+입력: 07_review_quality.md (추가), 06_write_lecture_script.md, 05_arch_lesson_plan.md, 01_input_data.json
+```
+
+**architecture-agent 수정 모드 (교안)**:
+```
+지시: 07_review_quality.md §6-2의 Phase 5 수정 지시를 반영하여 05_arch_lesson_plan.md를 수정하세요.
+규칙: (1) 지적된 구조적 문제만 수정 (2) 3중 검증 재실행 (3) 05_arch_lesson_plan.md 덮어쓰기
+입력: 07_review_quality.md, 05_arch_lesson_plan.md, 01_input_data.json, 03_brainstorm_result.md, 04_deep_research.md
+```
+
+**research-agent 보강 모드 (교안)**:
+```
+지시: 07_review_quality.md §6-2의 Phase 4 수정 지시에 따라 부족한 자료(발문/활동/평가)를 보강하세요.
+규칙: (1) 전면 재실행 아닌 보강(incremental) (2) 추가 웹 검색 5~10회 이내
+      (3) 04_deep_research.md에 보강 섹션 추가(append)
+입력: 07_review_quality.md, 04_deep_research.md, 01_input_data.json
+```
+
+**최대 재시도**: 1회 (원본 + 수정 = 총 2회). 2차 REVISE 시 사용자 개입 요청.
 
 ## 산출물 (02_script/)
 

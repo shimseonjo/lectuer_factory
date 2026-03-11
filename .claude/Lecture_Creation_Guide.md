@@ -218,7 +218,7 @@ writer-agent가 `06_write_lecture_outline.md` 내부에 `§시간표` 섹션을 
 | 4 | 심화 리서치 | research-agent | 브레인스토밍 §11 기반 4대 영역(교수법 사례·발문 뱅크·활동 자료·형성평가 도구) 심화 수집, SLO-활동-평가 삼각 정렬 검증 |
 | 5 | 교안 구조 설계 | architecture-agent | 레슨 레벨 Backward Design, 교수 모델별 도입-전개-정리 구조, Gagné 사태·발문·GRR 배치, 분 단위 시간 설계, 3중 검증(시간합산+SLO정렬+Gagné순차) |
 | 6 | 교안 작성 | writer-agent | script-template.md 기반 GAIDE 5단계, 교수 모델별 도입-전개-정리 스크립트, 발문·활동·형성평가·발표자 노트, 분할 작성(≤10/11~25/26+), 3중 검증(SLO+시간+톤) |
-| 7 | 품질 검토 | review-agent | 목표-활동-평가 정렬, SLO별 형성평가 커버리지, 시간 비율 준수 |
+| 7 | 품질 검토 | review-agent | QM Rubric 기준 3·5 중심, 5영역 가중치(정렬20/전개25/발문20/시간20/톤15), 조건부 가중치 재배분, 4단계 판정, 파이프라인 3단계 정합성 |
 
 **적용 프레임워크**:
 - Madeline Hunter 6단계 (직접교수법)

@@ -555,16 +555,583 @@ quality_review.md + 05_arch_architecture.md + 01_input_data.json + 03_brainstorm
 
 ---
 
+## 강의교안 레슨 플랜 설계 (Phase 5) 세부 워크플로우
+
+> **핵심 전환**: 구성안 Phase 5가 "어떤 차시에 무엇을 가르칠까"(코스 레벨)를 설계했다면,
+> 교안 Phase 5는 **"각 차시 안에서 어떻게 가르칠까"**(레슨 레벨)를 설계한다.
+>
+> 구성안의 Stage 1(목표)·Stage 2(평가)는 **그대로 상속**하고, Stage 3 내부를 분 단위로 상세화한다.
+
+### 전체 흐름
+
+```
+{output_dir}/01_input_data.json + 03_brainstorm_result.md + 04_deep_research.md
++ {outline_dir}/05_arch_architecture.md + 06_write_lecture_outline.md
+        │
+        ▼
+  ┌─────────────┐
+  │ Step 0      │ 컨텍스트 로드 + 교수 모델 결정
+  │ Read        │ 5개 파일 파싱, 템플릿 결정, Phase 매핑, 시간 비율 산출
+  └──────┬──────┘
+         │
+         ▼
+  ┌─────────────┐
+  │ Step 1      │ 레슨 레벨 Backward Design
+  │ Read, Write │ SLO 정제, 형성평가 매핑, 활동 선택
+  └──────┬──────┘
+         │
+         ▼
+  ┌─────────────┐
+  │ Step 2      │ 차시별 내부 구조 설계
+  │ Read, Write │ 도입-전개-정리, Gagne, 발문, GRR, 분 단위 시간
+  └──────┬──────┘
+         │
+         ▼
+  ┌─────────────┐
+  │ Step 3      │ 3중 검증 + 05_arch_lesson_plan.md 작성
+  │ Read, Write │ 시간합산/SLO정렬/Gagne순차 검증
+  └─────────────┘
+```
+
+### 산출물
+
+```
+{output_dir}/
+└── 05_arch_lesson_plan.md    # 최종 산출물 ★
+```
+
+> `{output_dir}`은 Skill 오케스트레이터가 전달하는 경로 (예: `lectures/2026-03-05_주제명/02_script/`)
+> `{outline_dir}`은 동일 강의의 구성안 폴더 (예: `lectures/2026-03-05_주제명/01_outline/`)
+
+---
+
+### Step 0: 컨텍스트 로드 + 교수 모델 결정
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | `{output_dir}/01_input_data.json`, `{output_dir}/03_brainstorm_result.md`, `{output_dir}/04_deep_research.md`, `{outline_dir}/05_arch_architecture.md`, `{outline_dir}/06_write_lecture_outline.md` |
+| 도구 | Read |
+| 산출물 | 내부 컨텍스트 (파일 미생성) |
+| 조건 | 5개 파일 모두 존재해야 진행 가능. 누락 시 오류 보고 |
+
+#### 동작
+
+1. **01_input_data.json 핵심 필드 추출**
+
+   | 필드 | 용도 |
+   |------|------|
+   | `script_settings.teaching_model` | 교수 모델 결정 (direct_instruction / pbl / flipped / mixed) |
+   | `script_settings.gagne_display.mode` | Gagne 사태 표시 수준 (all_9 / core_5 / none) |
+   | `script_settings.questioning_design` | 발문 포함 여부, 차시당 발문 수, 예상 답변 포함 여부 |
+   | `script_settings.formative_assessment` | 형성평가 유형 (sectional_check / exit_ticket / practice_integrated / none) |
+   | `script_settings.time_ratio` | 도입:전개:정리 비율 + source (auto / manual) |
+   | `script_settings.activity_strategies` | 활동 전략 배열 |
+   | `script_settings.practice_guide` | 실습 가이드 상세도 |
+   | `script_settings.instructional_model_map` | primary_model, secondary_model, grr_focus, bloom_question_pattern |
+   | `inherited.schedule.session_minutes` | 교시당 순수 시간 (분) |
+   | `inherited.schedule` (days, hours_per_day, break_minutes) | 총 교시 수 확인용 |
+
+2. **교수 모델 → 차시 내부 구조 템플릿 결정**
+
+   | teaching_model | primary_model | 차시 내부 구조 |
+   |---------------|---------------|--------------|
+   | direct_instruction | Hunter_6step | 도입(Anticipatory Set + Objective + Review) → 전개(I Do + CFU + We Do + You Do) → 정리(Feedback + Assessment + Closure) |
+   | pbl | PBL_6step | 도입(Entry Event + Objective/Prior) → 전개(NTK 도출 + 탐구 + 해결책) → 정리(공유/피드백 + 성찰) |
+   | flipped | Before_During_After | 도입(입장카드 + 오개념 정리) → 전개(심화 활동 + 공유/발표) → 정리(출구카드) |
+   | mixed | 차시별 개별 결정 | Phase(A/B/C/D)에 따라 위 3개 중 선택 |
+
+3. **Phase(A/B/C/D) 매핑 로드**
+
+   `{outline_dir}/05_arch_architecture.md` §3-1(매크로 구조)에서 각 차시의 Phase 귀속 확인.
+
+   `teaching_model = mixed`인 경우 차시별 교수 모델 자동 결정:
+
+   | Phase | 자동 결정 모델 | 근거 |
+   |-------|-------------|------|
+   | A (환경/기초) | direct_instruction | 시범+안내연습 위주 |
+   | B (핵심 습득) | outline 지정 또는 direct_instruction | I Do→We Do 전환 |
+   | C (심화 실습) | pbl 또는 flipped | 학습자 주도 |
+   | D (통합/산출물) | pbl | 프로젝트 중심 |
+
+   `06_write_lecture_outline.md`에서 차시별로 교수 모델이 명시되어 있으면 해당 값 우선 사용.
+
+4. **session_minutes 확인 + 시간 비율 산출**
+
+   ```
+   session_minutes = inherited.schedule.session_minutes (기본값: 50)
+   ```
+
+   `time_ratio.source == "auto"`인 경우 → 교수 모델별 자동 결정:
+
+   | teaching_model | 도입(%) | 전개(%) | 정리(%) |
+   |---------------|---------|---------|---------|
+   | direct_instruction | 10 | 60 | 30 |
+   | pbl | 10 | 75 | 15 |
+   | flipped | 5 | 80 | 15 |
+   | mixed | 10 | 70 | 20 |
+
+   `time_ratio.source == "manual"`인 경우 → `time_ratio.intro / main / wrap` 그대로 사용, Phase별 보정 미적용.
+
+   **Phase별 보정 규칙** (auto 모드에서만):
+
+   | Phase | 보정 | 근거 |
+   |-------|------|------|
+   | A (환경/기초) | 도입 +5% (전개에서 차감) | 환경설정·오리엔테이션 포함 |
+   | B (핵심 습득) | 보정 없음 (기본값 적용) | — |
+   | C (심화 실습) | 보정 없음 (기본값 적용) | — |
+   | D (통합/산출물) | 정리 -5%, 전개 +5% | 산출물 제작 시간 확보 |
+
+5. **03_brainstorm_result.md 핵심 섹션 추출**
+
+   | 섹션 | 용도 |
+   |------|------|
+   | §2 발문 설계 결과 | 수업 단계별 발문 배치, 차시별 발문 배분 |
+   | §3 학습활동 아이디어 | I Do / We Do / You Do별 활동 후보 |
+   | §4 실생활 사례 풀 | 활용 시점(도입/전개/정리) 태깅된 사례 |
+   | §5 형성평가 후보 | 배치 시점, 대상 SLO별 평가 도구 |
+   | §6 SLO-활동-발문-평가 정렬 매트릭스 | 정렬 상태 확인, Step 1 매핑 기준 |
+   | §7 활동-Gagne-GRR 매핑 매트릭스 | Gagne 사태별 활동 후보 |
+
+6. **04_deep_research.md Phase 5 활용 가이드 추출**
+
+   `§8 Phase 5 활용 가이드`에서:
+
+   | 하위 섹션 | 용도 |
+   |---------|------|
+   | §8-1 검증된 사례 목록 | Gagne 사태별 + GRR 단계별 구체 활동 사례 |
+   | §8-2 형성평가 도구 카탈로그 | SLO별 매핑된 평가 도구 |
+   | §8-3 발문 예시 은행 | Bloom's L4~L6 완성 발문 + 배치 가이드 |
+   | §8-4 시간 배분 권장 | GRR 전환 시간, 활동 전환 주기, 도입:전개:정리 분배 |
+
+7. **구성안 설계 상속 확인**
+
+   `{outline_dir}/05_arch_architecture.md`에서:
+   - §2 평가 프레임 (Stage 2) → **그대로 상속** (재설계 안 함)
+   - §4 정렬 맵 → **그대로 상속** (재설계 안 함)
+   - §3-2 일자별/차시별 상세 계획 → **입력으로 사용** (Phase, 주제, SLO, 이론:실습)
+   - §3-3 차시 간 연결 맵 → **차시 간 연결 확인에만 사용**
+
+   `{outline_dir}/06_write_lecture_outline.md`에서:
+   - 각 차시의 BOPPPS 구조, SLO 목록 → **레슨 레벨 BD의 입력**
+
+---
+
+### Step 1: 레슨 레벨 Backward Design
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | Step 0 컨텍스트 |
+| 도구 | Read, Write |
+| 산출물 | 내부 설계 중간결과 (05_arch_lesson_plan.md §1~§3에 통합) |
+
+#### 1-1. 차시별 SLO 정제
+
+`06_write_lecture_outline.md`의 차시별 SLO를 교안 수준으로 정제:
+
+1. SLO에 Bloom's 동사가 **측정 가능한 형태**인지 검증
+2. 차시 내 SLO 수가 **2~4개** 범위인지 확인 (초과 시 우선순위화 + 경고)
+3. 각 SLO에 `instructional_model_map.bloom_question_pattern`의 해당 수업 단계 Bloom's 수준 태깅
+
+#### 1-2. 형성평가 매핑
+
+**조건**: `formative_assessment.type != none`
+
+각 차시의 SLO에 대해 형성평가 도구를 매핑:
+
+| 매핑 소스 (우선순위) | 설명 |
+|-------------------|------|
+| 1. brainstorm §5 형성평가 후보 | SLO별 이미 배치 시점이 태깅된 후보 |
+| 2. deep_research §8-2 형성평가 도구 카탈로그 | SLO별 검증된 도구 |
+| 3. Lecture_Creation_Guide 형성평가×교수 모델 추천 도구 | 교수 모델별 기본 추천 (fallback) |
+
+유형별 배치 규칙:
+
+| formative_assessment.type | 배치 방식 |
+|--------------------------|---------|
+| sectional_check | 전개 중간에 1~2회 체크포인트 배치 |
+| exit_ticket | 정리 단계에 1회 배치 (3-2-1 형식 권장) |
+| practice_integrated | 실습 활동에 통합 (별도 시간 미배정) |
+
+**커버리지 규칙**: 각 SLO가 최소 1개 형성평가에 커버되어야 함. 미커버 SLO 발견 시 경고 + Step 3 검증에서 FAIL 처리.
+
+#### 1-3. 활동 선택
+
+각 차시·수업 단계(도입/전개/정리)에 배치할 활동을 brainstorm §3 + deep_research §8-1에서 선택:
+
+**선택 기준 (우선순위)**:
+
+| 순위 | 기준 | 설명 |
+|------|------|------|
+| 1 | GRR 단계 적합성 | 차시 Phase(A/B/C/D)의 GRR 기대 단계와 일치 |
+| 2 | SLO 정렬 | 활동이 해당 차시 SLO의 Bloom's 수준과 일치 |
+| 3 | activity_strategies 우선 | `script_settings.activity_strategies`에 포함된 전략의 활동 우선 |
+| 4 | 시간 적합성 | 활동 예상 소요시간이 해당 수업 단계 배정 시간 내 수용 가능 |
+| 5 | 인지 부하 분산 | 동일 유형 활동 연속 배치 회피 (15~20분마다 활동 유형 전환) |
+
+---
+
+### Step 2: 차시별 내부 구조 설계
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | Step 0 컨텍스트, Step 1 설계 결과 |
+| 도구 | Read, Write |
+| 산출물 | 내부 설계 중간결과 (05_arch_lesson_plan.md §2에 통합) |
+
+#### 2-1. 교수 모델별 차시 내부 구조 (session_minutes 기준)
+
+**직접교수법 (Hunter + GRR)**:
+
+| 단계 | 하위 단계 | 시간 | Gagne 사태 | GRR | 핵심 활동 |
+|------|---------|------|-----------|-----|---------|
+| 도입 | Anticipatory Set | 3~4분 | 1. 주의집중 | — | Hook, 사례 제시 |
+| 도입 | Objective | 1~2분 | 2. 목표제시 | — | SLO 명시 |
+| 도입 | Review | 2~3분 | 3. 선행학습 회상 | — | 이전 차시 복습 |
+| 전개 | Input + Modeling | 10~15분 | 4. 내용제시 + 5. 학습안내 | I Do | 개념 설명, 교사 시범 |
+| 전개 | CFU | 2~3분 | (4/5 중간 체크) | I Do | 이해도 확인 발문 |
+| 전개 | Guided Practice | 10~15분 | 6. 수행유도 | We Do | 안내 연습, 짝 활동 |
+| 전개 | Independent Practice | 5~10분 | 6. 수행유도 (계속) | You Do | 개인 과제 |
+| 정리 | Feedback | 3~5분 | 7. 피드백 | — | 수행 결과 피드백 |
+| 정리 | Assessment | 3~5분 | 8. 수행평가 | — | 형성평가 |
+| 정리 | Closure | 2~3분 | 9. 전이강화 | — | 핵심 정리, 차시 예고 |
+
+**PBL (문제기반학습)**:
+
+| 단계 | 하위 단계 | 시간 | Gagne 사태 | GRR | 핵심 활동 |
+|------|---------|------|-----------|-----|---------|
+| 도입 | Entry Event | 3~5분 | 1. 주의집중 | — | 문제 시나리오 제시 |
+| 도입 | Objective + Prior | 2~3분 | 2+3. 목표+회상 | — | SLO 연결, 사전지식 활성화 |
+| 전개 | NTK 도출 | 5~7분 | 4. 내용제시 | We Do | 소그룹 브레인스토밍 (아는 것/알아야 하는 것) |
+| 전개 | 탐구 | 15~20분 | 5+6. 안내+수행유도 | You Do Together | 소그룹 조사, 촉진자 발문 순회 |
+| 전개 | 해결책 | 10~12분 | 6. 수행유도 (계속) | You Do Together | 그룹 정리, 프로토타입 |
+| 정리 | 공유/피드백 | 5~7분 | 7+8. 피드백+평가 | — | 갤러리워크, 동료 피드백 |
+| 정리 | 성찰 | 3~5분 | 9. 전이강화 | — | 성찰 일지, Exit Ticket |
+
+**플립러닝 (Before/During/After)**:
+
+| 단계 | 하위 단계 | 시간 | Gagne 사태 | GRR | 핵심 활동 |
+|------|---------|------|-----------|-----|---------|
+| 도입 | 입장카드 | 3~5분 | 1+3. 주의+회상 | — | 사전학습 확인 퀴즈 (2~4문제) |
+| 도입 | 오개념 정리 | 3~5분 | 2+4. 목표+내용제시 | I Do | 미니 강의 (오개념 교정만) |
+| 전개 | 심화 활동 | 20~25분 | 5+6. 안내+수행유도 | We Do + You Do | 그룹 활동, 사례 분석, 토론 |
+| 전개 | 공유/발표 | 5~8분 | 7. 피드백 | — | 결과 공유, 동료 피드백 |
+| 정리 | 출구카드 | 3~5분 | 8+9. 평가+전이 | — | 형성평가 + 사후과제 안내 |
+
+`session_minutes != 50`인 경우: 위 시간을 비율로 환산.
+
+#### 2-2. Gagne 사태 배치
+
+`gagne_display.mode`에 따른 분기:
+
+| mode | 배치 방식 |
+|------|---------|
+| `all_9` | 9사태 전부를 차시 구조에 명시적 배치. 각 사태에 시간(분) 부여. 사태 간 전환 포인트 명시 |
+| `core_5` | 핵심 5사태(1·2·3·6·9)만 명시. 사태 4+5는 "내용제시/학습안내"로 합산. 사태 7은 사태 6에 통합. 사태 8은 정리 형성평가에 통합 |
+| `none` | Gagne 사태 라벨 생략. 도입-전개-정리 단계와 하위 단계만 표기. 시간 배분은 동일하게 수행 |
+
+**Gagne 시간 배분 참조** (50분 기준, 리서치 기반):
+
+| 구간 | 사태 | 권장 시간 |
+|------|------|---------|
+| 도입 | 1~3 | 6~10분 |
+| 전개 | 4~7 | 28~35분 |
+| 정리 | 8~9 | 6~10분 |
+
+**핵심 5사태 축약 패턴** (core_5):
+```
+사태 1: 주의집중  (2~3분)   ─── 도입
+사태 2: 목표제시  (1~2분)   ─── 도입
+사태 3: 선행학습  (3~5분)   ─── 도입
+[내용제시+학습안내 합산]    ─── 전개 (15~20분)
+사태 6: 수행유도  (12~15분) ─── 전개 (피드백 포함)
+[형성평가에 통합]           ─── 정리
+사태 9: 전이강화  (3~5분)   ─── 정리
+```
+
+#### 2-3. 발문 배치
+
+**조건**: `questioning_design.include = true` (false이면 이 단계 전체 생략)
+
+차시당 발문 수 = `questioning_design.questions_per_session` (기본: 4)
+
+**기본 배분**: 도입 1개 + 전개 2개(초반 1 + 후반 1) + 정리 1개
+- `questions_per_session > 4` → 전개에 추가 배분
+- `questions_per_session < 4` → 도입 또는 정리에서 감축
+
+**교수 모델별 Bloom's 발문 수준 패턴**:
+
+| 수업 단계 | 직접교수법 | PBL | 플립러닝 |
+|----------|-----------|-----|---------|
+| 도입 | L1~L2 (기억, 이해) | L4~L5 (분석, 평가) | L2~L3 (이해, 적용) |
+| 전개 초반 | L2~L3 | L3~L4 | L3~L4 |
+| 전개 후반 | L3~L4 | L5~L6 | L4~L5 |
+| 정리 | L2~L3 | L5~L6 | L5 |
+
+**발문 선택 소스** (우선순위):
+1. brainstorm §2 수업 단계별 발문 배치 → Bloom's 수준 일치하는 발문 선택
+2. deep_research §8-3 발문 예시 은행 → 부족 시 보충
+
+#### 2-4. GRR 단계 배치
+
+Phase(A/B/C/D)에 따른 전개 구간 내 GRR 비율:
+
+| Phase | I Do | We Do | You Do | 근거 |
+|-------|------|-------|--------|------|
+| A (환경/기초) | 70% | 30% | — | 교사 주도, 시범 중심 |
+| B (핵심 습득) | 40% | 40% | 20% | I Do→We Do 전환 |
+| C (심화 실습) | — | 30% | 70% | We Do→You Do 전환 |
+| D (통합/산출물) | — | 10% | 90% | 학습자 주도, 프로젝트 |
+
+`teaching_model = pbl`인 경우:
+- GRR 기본이 `You Do Together`이므로 Phase 구분 없이 그룹 중심
+- Phase A만 예외적으로 I Do(문제 상황 안내) 포함
+
+`teaching_model = flipped`인 경우:
+- 도입의 오개념 정리가 유일한 I Do
+- 전개 전체가 We Do + You Do
+
+#### 2-5. 분 단위 시간 계산
+
+각 차시에 대해:
+
+```
+intro_minutes = floor(session_minutes × time_ratio.intro / 100)
+main_minutes  = floor(session_minutes × time_ratio.main / 100)
+wrap_minutes  = session_minutes − intro_minutes − main_minutes  (나머지 보정)
+```
+
+Phase별 보정 적용 후, 하위 단계에 분 할당:
+- 하위 단계별 시간 합산 = 해당 수업 단계 총 시간
+- 활동 예상 소요시간이 배정 시간 초과 시 → 활동 축소 또는 분할
+
+**인지 부하 제한**:
+- 연속 설명 블록: **15~20분 이내** (초과 시 중간 활동 삽입)
+- 연속 실습: **25분 이내** (초과 시 중간 체크인 삽입)
+- 동일 유형 활동 연속 금지 (15~20분마다 활동 유형 전환)
+
+---
+
+### Step 3: 3중 검증 + 05_arch_lesson_plan.md 작성
+
+| 항목 | 내용 |
+|------|------|
+| 입력 | Step 0~2 전체 설계 결과 |
+| 도구 | Read, Write |
+| 산출물 | `{output_dir}/05_arch_lesson_plan.md` ★ 최종 산출물 |
+
+#### 3-1. 3중 검증
+
+**검증 1 — 시간 합산 검증**
+
+```
+차시별 검증:
+  sum(하위_단계_시간) == session_minutes  (허용 오차: ±1분)
+
+전체 비율 검증:
+  실제_도입_비율 = sum(모든_차시_도입_시간) / sum(모든_session_minutes) × 100
+  → 교수 모델별 기대 도입 비율과 비교 (오차 5% 이내)
+  (전개, 정리도 동일)
+```
+
+| 결과 | 처리 |
+|------|------|
+| 차시 내 합산 불일치 (>±1분) | 가장 유연한 활동(실습/활동)에서 시간 조정 |
+| 전체 비율 5%+ 이탈 | 이탈 방향 차시들에서 해당 단계 시간 재배분 |
+| 적정 | PASS |
+
+**검증 2 — SLO 정렬 검증**
+
+| 검증 항목 | 통과 기준 | 실패 시 처리 |
+|---------|---------|-----------|
+| SLO 완전 커버리지 | 모든 SLO가 최소 1개 차시의 전개에 활동으로 배치 | 미배치 SLO의 관련 차시에 활동 추가 |
+| Bloom's 수준 일치 | 발문 Bloom's가 해당 SLO Bloom's 기대 범위 내 | 발문 교체 (brainstorm/deep_research에서) |
+| 형성평가 커버리지 | 모든 SLO가 최소 1개 형성평가에 커버 | 미커버 SLO에 형성평가 추가 |
+| 활동-평가 Bloom's 정합 | 평가 Bloom's ≤ 활동 최대 Bloom's | 활동 수준 상향 또는 평가 수준 하향 |
+
+조건부 SKIP:
+- `formative_assessment.type = none` → 형성평가 커버리지 + 활동-평가 정합 검증 SKIP
+- `questioning_design.include = false` → Bloom's 수준 일치 검증 SKIP
+
+**검증 3 — Gagne 순차 검증**
+
+**조건**: `gagne_display.mode != none` (none이면 전체 SKIP)
+
+| 검증 항목 | 통과 기준 | 실패 시 처리 |
+|---------|---------|-----------|
+| 사태 순서 | 배치된 사태가 지정 순서 준수 (all_9: 1→2→…→9, core_5: 1→2→3→6→9) | 순서 위반 사태 재배치 |
+| 누락 사태 | all_9일 때 9사태, core_5일 때 5사태 전부 존재 | 누락 사태를 적합한 수업 단계에 추가 |
+| 시간 적합성 | 각 사태에 최소 1분 이상 배정 | 인접 사태와 통합 또는 시간 재배분 |
+
+#### 3-2. 05_arch_lesson_plan.md 작성
+
+검증 통과 후 최종 문서 작성.
+
+---
+
+## 05_arch_lesson_plan.md 산출물 구조
+
+```markdown
+# 레슨 플랜 설계 (교안 구조)
+
+## 메타데이터
+- 강의 주제: {topic}
+- 설계 일자: {date}
+- 교수 모델: {teaching_model.label} ({primary_model})
+- Gagne 사태 모드: {gagne_display.mode}
+- 발문 설계: {include ? "포함 (차시당 N개)" : "미포함"}
+- 형성평가: {formative_assessment.type}
+- 시간 비율: 도입 {intro}% / 전개 {main}% / 정리 {wrap}% (source: {source})
+- 교시당 시간: {session_minutes}분
+- 총 차시 수: {total_sessions}
+- GRR 중심: {grr_focus}
+- 입력 소스: 01_input_data.json, 03_brainstorm_result.md, 04_deep_research.md, 01_outline/05_arch_architecture.md, 01_outline/06_write_lecture_outline.md
+
+## 1. 교수 모델별 차시 구조 템플릿
+
+### 1-1. {primary_model} 기본 구조
+| 단계 | 하위 단계 | 기본 시간(분) | Gagne 사태 | GRR | 핵심 활동 유형 |
+|------|---------|-------------|-----------|-----|------------|
+
+### 1-2. Phase별 시간 비율 보정
+| Phase | 도입(%) | 전개(%) | 정리(%) | 도입(분) | 전개(분) | 정리(분) | GRR 중심 |
+|-------|--------|---------|---------|---------|---------|---------|---------|
+
+(teaching_model = mixed인 경우)
+### 1-3. 차시별 교수 모델 배정
+| 차시 | Phase | 적용 교수 모델 | 근거 |
+|------|-------|-------------|------|
+
+## 2. 차시별 레슨 플랜
+
+### Day {N}: {일자 주제}
+
+#### 차시 {M}: {차시 주제}
+- Phase: {A/B/C/D}
+- SLO: {SLO 목록}
+- 교수 모델: {해당 차시 교수 모델}
+- GRR 중심: {I Do / We Do / You Do}
+
+| 시간(분) | 수업 단계 | 하위 단계 | Gagne 사태 | 활동 내용 | 발문 | 형성평가 | GRR |
+|---------|---------|---------|-----------|---------|------|---------|-----|
+
+**차시 요약**:
+- 도입: {intro_minutes}분 / 전개: {main_minutes}분 / 정리: {wrap_minutes}분
+- 발문: {N}개 (L{range})
+- 형성평가: {유형} ({위치})
+- 핵심 활동: {활동명}
+
+(모든 차시에 대해 반복)
+
+## 3. SLO-활동-형성평가 정렬 맵 (차시 레벨)
+| SLO | Bloom's | 배치 차시 | 주요 활동 | 활동 Bloom's | 형성평가 | 평가 Bloom's | 발문 | 정렬 상태 |
+|-----|---------|---------|---------|------------|---------|------------|------|---------|
+
+(formative_assessment.type = none → 형성평가/평가 Bloom's 열 제거)
+(questioning_design.include = false → 발문 열 제거)
+
+## 4. 검증 결과
+
+### 4-1. 시간 합산 검증
+| 차시 | session_minutes | 배정 합계(분) | 오차 | 판정 |
+|------|----------------|-------------|------|------|
+
+전체 비율:
+- 실제 도입 평균: {N}% (기대: {N}%)
+- 실제 전개 평균: {N}% (기대: {N}%)
+- 실제 정리 평균: {N}% (기대: {N}%)
+- 판정: {PASS/FAIL}
+
+### 4-2. SLO 정렬 검증
+| 항목 | 결과 | 비고 |
+|------|------|------|
+| SLO 완전 커버리지 | {PASS/FAIL} | |
+| Bloom's 수준 일치 | {PASS/FAIL/SKIP} | |
+| 형성평가 커버리지 | {PASS/FAIL/SKIP} | |
+| 활동-평가 Bloom's 정합 | {PASS/FAIL/SKIP} | |
+
+### 4-3. Gagne 순차 검증
+| 차시 | 배치 사태 순서 | 누락 사태 | 판정 |
+|------|-------------|---------|------|
+
+(gagne_display.mode = none → "Gagne 순차 검증 생략 (설정에 의해 제외)" 표시)
+
+## 5. 설계 결정 로그
+| # | 결정 | 근거 | 대안 | 트레이드오프 |
+|---|------|------|------|-----------|
+```
+
+---
+
+## 수정 모드 — 교안 레슨 플랜 (Phase 7 REVISE 후속 처리)
+
+review-agent의 REVISE 판정에서 구조적 문제(Phase 5 책임)가 지적된 경우, Skill 오케스트레이터가 architecture-agent를 **수정 모드**로 재호출한다.
+
+### 수정 모드 흐름
+
+```
+07_review_quality.md + 05_arch_lesson_plan.md + 01_input_data.json
++ 03_brainstorm_result.md + 04_deep_research.md
++ {outline_dir}/05_arch_architecture.md + {outline_dir}/06_write_lecture_outline.md
+        │
+        ▼
+  ┌─────────────┐
+  │ 수정 Step 0  │ 수정 컨텍스트 로드
+  │ Read        │ 07_review_quality.md의 Phase 5 수정 지시 파싱
+  └──────┬──────┘
+         │
+         ▼
+  ┌─────────────┐
+  │ 수정 Step 1  │ 구조적 문제 수정
+  │ Read, Write │ 시간 배분, 발문 배치, Gagne, SLO 정렬, 활동 교체
+  └──────┬──────┘
+         │
+         ▼
+  ┌─────────────┐
+  │ 수정 Step 2  │ 3중 검증 재실행 + 05_arch_lesson_plan.md 덮어쓰기
+  │ Read, Write │ 시간합산/SLO정렬/Gagne순차 재검증
+  └─────────────┘
+```
+
+### 수정 모드 규칙
+
+1. `07_review_quality.md`의 **Phase 5 수정 지시만** 반영 (Phase 6 문서 수준 수정은 무시)
+2. 지적된 구조적 문제만 수정 — 기존 설계의 나머지 부분은 유지
+3. 수정 후 **3중 검증**(시간합산/SLO정렬/Gagne순차)을 반드시 재실행
+4. `05_arch_lesson_plan.md`를 덮어쓰기
+5. 수정 완료 후 writer-agent가 교안 재작성하므로, 05_arch_lesson_plan.md의 정합성이 핵심
+
+### 수정 가능 항목 (Phase 5 책임 범위)
+
+| 지적 유형 | 수정 대상 | 수정 방법 |
+|---------|---------|---------|
+| 시간 배분 부적절 | 차시 내부 하위 단계 시간 | 시간 재분배 (합산 불변) |
+| SLO 미커버 | 차시별 활동/형성평가 | brainstorm/deep_research에서 대체 활동·평가 선택 |
+| 발문 수준 부적합 | 발문 배치 | Bloom's 패턴에 맞는 발문으로 교체 |
+| Gagne 순서 위반 | 사태 배치 순서 | 사태 재배치 |
+| GRR 전환 부자연 | Phase별 GRR 비율 | Phase 기대 GRR과 일치하도록 활동 교체 |
+| 활동 다양성 부족 | 활동 유형 | 연속 동일 유형 제거, 대체 활동 배치 |
+| 인지 부하 과다 | 연속 설명/활동 시간 | 15~20분 기준으로 중간 활동·체크인 삽입 |
+
+### 수정 불가 항목 (Phase 5 범위 밖)
+
+- 코스 레벨 정렬 맵 변경 → 구성안 Phase 5 재실행 필요
+- 총괄 평가 재설계 → 구성안 Phase 5 재실행 필요
+- 차시 주제 재배정 → 구성안 Phase 5 재실행 필요
+- 교수 모델 변경 → Phase 1 재실행 필요
+
+---
+
 ## 워크플로우별 동작
 
 architecture-agent는 3개 워크플로우에서 사용됩니다. 강의구성안이 기본(상세)이며, 나머지는 차이점만 기술합니다.
 
 | 구분 | 강의구성안 (Phase 5) | 강의교안 (Phase 5) | 슬라이드 기획 (Phase 3) |
 |------|-------|-------|-------|
-| **추가 입력** | — | `01_outline/lecture_outline.md` | `02_script/lecture_script.md` |
-| **설계 초점** | 코스 구조: 차시 배정, 정렬 맵, 시간 배분 | 차시 내부 구조: 도입-전개-정리, Gagné 9사태, 발문 배치 | 슬라이드 구조: 슬라이드 수/유형/순서, 레이아웃 배정 |
+| **추가 입력** | — | `01_outline/05_arch_architecture.md`, `01_outline/06_write_lecture_outline.md` | `02_script/lecture_script.md` |
+| **설계 초점** | 코스 구조: 차시 배정, 정렬 맵, 시간 배분 | 차시 내부 구조: 도입-전개-정리, Gagné 사태, 발문·GRR 배치 | 슬라이드 구조: 슬라이드 수/유형/순서, 레이아웃 배정 |
 | **Backward Design 범위** | 코스 레벨 + 유닛 레벨 (Stage 1-2-3 전체) | 레슨 레벨 (Stage 3 내부 상세화) | 프레젠테이션 레벨 (정보 흐름 설계) |
-| **매크로 구조** | Phase A→B→C→D (4단계) | 도입(10-15%) → 전개(70-80%) → 정리(10-15%) | 도입부 → 본론 섹션들 → 마무리 |
-| **정렬 대상** | 학습목표 ↔ 활동 ↔ 평가 ↔ 차시 | 차시목표 ↔ 설명 ↔ 활동 ↔ 형성평가 | 슬라이드 ↔ 교안 섹션 ↔ 학습목표 |
-| **시간 배분 기준** | 교시 단위 (session_minutes) | 분 단위 (도입/전개/정리 비율) | 슬라이드당 1-2분 기준 |
-| **산출물** | `01_outline/05_arch_architecture.md` | `02_script/05_arch_architecture.md` | `03_slide_plan/05_arch_architecture.md` |
+| **매크로 구조** | Phase A→B→C→D (4단계) | 도입(5-10%) → 전개(60-80%) → 정리(15-30%) | 도입부 → 본론 섹션들 → 마무리 |
+| **정렬 대상** | 학습목표 ↔ 활동 ↔ 평가 ↔ 차시 | SLO ↔ 활동 ↔ 발문 ↔ 형성평가 (차시 레벨) | 슬라이드 ↔ 교안 섹션 ↔ 학습목표 |
+| **시간 배분 기준** | 교시 단위 (session_minutes) | 분 단위 (도입/전개/정리 내 하위 단계별) | 슬라이드당 1-2분 기준 |
+| **검증** | 시간예산 + 인지부하 + 정렬맵 | 시간합산 + SLO정렬 + Gagné순차 | 슬라이드수 + 시간적합 + 레이아웃 |
+| **산출물** | `01_outline/05_arch_architecture.md` | `02_script/05_arch_lesson_plan.md` | `03_slide_plan/05_arch_architecture.md` |

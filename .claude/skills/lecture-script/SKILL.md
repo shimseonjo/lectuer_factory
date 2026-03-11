@@ -115,7 +115,26 @@ $ARGUMENTS
 
 ### Phase 5: 교안 구조 설계 → architecture-agent (도입-전개-정리, Gagne 사태 배치)
 
-<!-- TODO: Phase 5 구현 예정 -->
+**지시**: 차시별 내부 구조를 설계하세요. 교수 모델별 도입-전개-정리 구조, Gagné 사태 배치, 발문 배치, GRR 단계를 분 단위로 설계하고, SLO-활동-발문-형성평가 정렬을 검증합니다.
+**입력 파일**:
+  - `{output_dir}/01_input_data.json` (script_settings, instructional_model_map, inherited.schedule)
+  - `{output_dir}/03_brainstorm_result.md` (§2 발문, §3 활동, §5 형성평가, §6 SLO정렬, §7 Gagné-GRR매핑)
+  - `{output_dir}/04_deep_research.md` (§8 Phase 5 활용 가이드: 사례, 평가도구, 발문은행, 시간권장)
+**참조 파일**:
+  - `{outline_dir}/05_arch_architecture.md` (코스 레벨 구조: Phase 매핑, 정렬 맵 — 상속용)
+  - `{outline_dir}/06_write_lecture_outline.md` (차시별 BOPPPS 구조, SLO, 일정)
+**산출물 위치**: `{output_dir}/05_arch_lesson_plan.md`
+**워크플로우**: Step 0(컨텍스트 로드+교수 모델 결정) → Step 1(레슨 레벨 Backward Design) → Step 2(차시별 내부 구조 설계) → Step 3(3중 검증+산출물 작성)
+**검증**: 시간합산(하위 단계 합 = session_minutes) + SLO정렬(커버리지, Bloom's 정합) + Gagné순차(배치 순서, 누락, 최소 시간)
+**상세**: `.claude/agents/architecture-agent/AGENT.md`의 "강의교안 레슨 플랜 설계 (Phase 5) 세부 워크플로우" 섹션 참조
+
+**조건부 분기**:
+- `gagne_display.mode == "none"` → Gagné 라벨 생략, 도입-전개-정리만 표기, Gagné 순차 검증 SKIP
+- `gagne_display.mode == "core_5"` → 핵심 5사태만 명시, 나머지 통합
+- `questioning_design.include == false` → 발문 배치 생략, 발문 Bloom's 검증 SKIP
+- `formative_assessment.type == "none"` → 형성평가 배치 생략, 형성평가 커버리지 검증 SKIP
+- `time_ratio.source == "manual"` → 사용자 지정 비율 적용 (auto 시 교수 모델별 기본값 + Phase 보정)
+- `teaching_model == "mixed"` → 차시별 교수 모델 자동 결정 (Phase A→직접교수법, C/D→PBL/플립러닝)
 
 ### Phase 6: 교안 작성 → writer-agent (섹션별 스크립트, 발문, 활동, 평가문항)
 

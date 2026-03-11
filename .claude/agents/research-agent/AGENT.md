@@ -31,18 +31,18 @@ model: sonnet
 
 ```
 Step 0: 입력 로드 + 리서치 계획 수립
-  │     input_data.json → research_plan.md
+  │     01_input_data.json → 02_explore_plan.md
   │
-  ├── Step 1: 로컬 참고자료 분석 → local_findings.md
+  ├── Step 1: 로컬 참고자료 분석 → 02_explore_local.md
   │   (조건: local_folders 비어있으면 건너뜀)
   │
-  ├── Step 2: NotebookLM 소스 쿼리 → nblm_findings.md
+  ├── Step 2: NotebookLM 소스 쿼리 → 02_explore_nblm.md
   │   (조건: notebooklm_urls 비어있으면 건너뜀)
   │
-  ├── Step 3: 인터넷 리서치 → web_findings.md
+  ├── Step 3: 인터넷 리서치 → 02_explore_web.md
   │   (web-research 패턴: 계획 → 검색 → 심화)
   │
-  └── Step 4: 4자료원 통합 → research_exploration.md
+  └── Step 4: 4자료원 통합 → 02_explore_research.md
       (주제 축 추출 → 축별 배정 → 교차검증 → 고착필터 → 작성)
 ```
 
@@ -50,11 +50,11 @@ Step 0: 입력 로드 + 리서치 계획 수립
 
 ```
 {output_dir}/
-├── research_plan.md          # Step 0: 리서치 계획
-├── local_findings.md         # Step 1: 로컬 참고자료 분석 결과
-├── nblm_findings.md          # Step 2: NotebookLM 쿼리 결과
-├── web_findings.md           # Step 3: 인터넷 리서치 결과
-└── research_exploration.md   # Step 4: 4자료원 통합 최종 산출물 ★
+├── 02_explore_plan.md          # Step 0: 리서치 계획
+├── 02_explore_local.md         # Step 1: 로컬 참고자료 분석 결과
+├── 02_explore_nblm.md          # Step 2: NotebookLM 쿼리 결과
+├── 02_explore_web.md           # Step 3: 인터넷 리서치 결과
+└── 02_explore_research.md   # Step 4: 4자료원 통합 최종 산출물 ★
 ```
 
 ---
@@ -63,13 +63,13 @@ Step 0: 입력 로드 + 리서치 계획 수립
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `{output_dir}/input_data.json` |
+| 입력 | `{output_dir}/01_input_data.json` |
 | 도구 | Read, Write |
-| 산출물 | `{output_dir}/research_plan.md` |
+| 산출물 | `{output_dir}/02_explore_plan.md` |
 
 **동작**:
 
-1. `input_data.json` 읽기
+1. `01_input_data.json` 읽기
 2. 핵심 필드 추출:
    - `topic` (Q1), `target_learner` (Q2), `learning_goals` (Q3)
    - `keywords` (Q6), `prerequisites` (Q7), `reference_sources` (Q11)
@@ -79,7 +79,7 @@ Step 0: 입력 로드 + 리서치 계획 수립
    - "이 분야의 핵심 도전과제와 일반적 오해(misconception)는?"
    - "관련 산업/직무에서의 실제 활용 사례는?"
    - 키워드 기반 추가 질문
-4. `research_plan.md` 작성:
+4. `02_explore_plan.md` 작성:
    - 리서치 질문 목록
    - 서브토픽 분류 (2~4개)
    - 자료원별 검색 예산 (웹 검색 최대 15회, NBLM 쿼리 최대 5회)
@@ -91,9 +91,9 @@ Step 0: 입력 로드 + 리서치 계획 수립
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `{output_dir}/input_data.json` → `reference_sources.local_folders` (폴더 경로 배열) |
+| 입력 | `{output_dir}/01_input_data.json` → `reference_sources.local_folders` (폴더 경로 배열) |
 | 도구 | Glob, Read, Bash |
-| 산출물 | `{output_dir}/local_findings.md` |
+| 산출물 | `{output_dir}/02_explore_local.md` |
 | 조건 | `local_folders`가 빈 배열이면 **건너뜀** |
 
 #### 확장자별 읽기 전략
@@ -127,7 +127,7 @@ for i, slide in enumerate(prs.slides, 1):
 2. 파일 10개 초과 시 파일명/크기 기준 우선순위 선별
 3. 확장자별 분기로 읽기 실행
 4. 파일별 핵심 내용 요약 (200~400자)
-5. `local_findings.md` 작성
+5. `02_explore_local.md` 작성
 
 ---
 
@@ -135,9 +135,9 @@ for i, slide in enumerate(prs.slides, 1):
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `{output_dir}/input_data.json` → `reference_sources.notebooklm_urls` (URL 배열) |
+| 입력 | `{output_dir}/01_input_data.json` → `reference_sources.notebooklm_urls` (URL 배열) |
 | 도구 | Bash (NBLM 스킬 CLI) |
-| 산출물 | `{output_dir}/nblm_findings.md` |
+| 산출물 | `{output_dir}/02_explore_nblm.md` |
 | 조건 | `notebooklm_urls`가 빈 배열이면 **건너뜀** |
 | 제약 | 노트북당 최대 5쿼리 (일일 50쿼리 제한 고려) |
 
@@ -159,7 +159,7 @@ python3 .claude/skills/nblm/scripts/run.py nblm_cli.py sources --id {notebook_id
 
 #### 질문 생성 전략
 
-`research_plan.md`의 리서치 질문을 NBLM용으로 변환:
+`02_explore_plan.md`의 리서치 질문을 NBLM용으로 변환:
 
 1. "이 자료에서 {topic}의 핵심 개념과 원리는 무엇인가?"
 2. "이 자료에서 {target_learner}에게 가장 중요한 내용은?"
@@ -180,14 +180,14 @@ NBLM 응답 끝에 "Is that ALL you need to know?" 수신 시:
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `research_plan.md`, `input_data.json` |
+| 입력 | `02_explore_plan.md`, `01_input_data.json` |
 | 도구 | WebSearch, WebFetch, Write |
-| 산출물 | `{output_dir}/web_findings.md` |
+| 산출물 | `{output_dir}/02_explore_web.md` |
 | 제약 | 총 웹 검색 최대 15회 |
 
 #### 3a. 서브토픽 분류 (계획)
 
-`research_plan.md`의 리서치 질문을 2~4개 서브토픽으로 분류:
+`02_explore_plan.md`의 리서치 질문을 2~4개 서브토픽으로 분류:
 
 | 서브토픽 | 검색 목적 | 검색 예산 |
 |---------|----------|----------|
@@ -239,19 +239,19 @@ NBLM 응답 끝에 "Is that ALL you need to know?" 수신 시:
 
 ---
 
-### Step 4: 4자료원 통합 → research_exploration.md
+### Step 4: 4자료원 통합 → 02_explore_research.md
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | input_data.json, research_plan.md, local_findings.md, nblm_findings.md, web_findings.md |
+| 입력 | 01_input_data.json, 02_explore_plan.md, 02_explore_local.md, 02_explore_nblm.md, 02_explore_web.md |
 | 도구 | Read, Write |
-| 산출물 | `{output_dir}/research_exploration.md` ★ 최종 산출물 |
+| 산출물 | `{output_dir}/02_explore_research.md` ★ 최종 산출물 |
 
 #### 4-1. 자료원별 역할과 신뢰도
 
 | 자료원 | 역할 | 신뢰도 |
 |--------|------|--------|
-| **input_data.json** | 설계 기준선 — 모든 판단의 절대 기준 | ★★★ 절대 기준 |
+| **01_input_data.json** | 설계 기준선 — 모든 판단의 절대 기준 | ★★★ 절대 기준 |
 | **로컬 참고자료** | 사용자 선별 핵심 자료 | ★★★ 높음 |
 | **NotebookLM** | 사용자 선별 소스 기반 검증된 답변 | ★★★ 높음 |
 | **인터넷 리서치** | 최신 트렌드, 외부 벤치마킹 | ★☆☆~★★☆ 가변 |
@@ -262,7 +262,7 @@ NBLM 응답 끝에 "Is that ALL you need to know?" 수신 시:
 
 **단계 1 — 주제 축(Theme Axis) 추출**
 
-`input_data.json`에서 통합의 축이 되는 5개 주제 축을 도출:
+`01_input_data.json`에서 통합의 축이 되는 5개 주제 축을 도출:
 
 | 축 | 질문 | 매핑 섹션 |
 |----|------|----------|
@@ -315,7 +315,7 @@ input_data  기준   기준
 
 **단계 5 — 구조화된 문서 작성**
 
-축 → 섹션 매핑으로 `research_exploration.md` 작성.
+축 → 섹션 매핑으로 `02_explore_research.md` 작성.
 
 각 섹션 작성 규칙:
 - 검증 태그 유지 (`[검증됨]`, `[미검증]`, `[주의]`)
@@ -328,7 +328,7 @@ input_data  기준   기준
 - 구체적 해결책(강의 구성 방법) 제외
 - 각 인사이트에 관련 `learning_goal` 태깅
 
-#### 4-3. research_exploration.md 산출물 구조
+#### 4-3. 02_explore_research.md 산출물 구조
 
 ```markdown
 # 탐색적 리서치 결과
@@ -389,7 +389,7 @@ input_data  기준   기준
 |------|--------------|------------|
 | **방법론** | web-research 패턴 (4자료원 통합) | deep-research 8단계 파이프라인 |
 | **목적** | 문제 공간 이해, 방향 설정 | 아이디어 검증, 자료 보강 |
-| **입력** | input_data.json | brainstorm_result.md §8 |
+| **입력** | 01_input_data.json | 03_brainstorm_result.md §8 |
 | **고착 필터** | 강함 (구체적 목차 금지) | 완화 (구체적 사례·문헌 허용, 타강의 목차는 금지) |
 | **검증 수준** | 신뢰도 태그 | deep-research Triangulation + Critique |
 | **검색 예산** | 웹 15회, NBLM 5회 | 웹 20~25회, NBLM 노트북당 3~5회, 로컬 재분석 필수 |
@@ -416,10 +416,10 @@ Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
 
 ```
 {output_dir}/
-├── deep_research_plan.md    # Step 0: 심화 리서치 계획 (Scope+Plan)
-├── deep_local_nblm.md       # Step 1: 로컬/NBLM 심화 재분석
-├── web_deep_findings.md     # Step 1: 웹 심화 수집 결과
-└── research_deep.md         # Step 4: 심화 리서치 최종 산출물 ★
+├── 04_deep_plan.md    # Step 0: 심화 리서치 계획 (Scope+Plan)
+├── 04_deep_local_nblm.md       # Step 1: 로컬/NBLM 심화 재분석
+├── 04_deep_web.md     # Step 1: 웹 심화 수집 결과
+└── 04_deep_research.md         # Step 4: 심화 리서치 최종 산출물 ★
 ```
 
 ---
@@ -428,15 +428,15 @@ Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `{output_dir}/brainstorm_result.md`, `{output_dir}/input_data.json`, `{output_dir}/research_exploration.md` |
+| 입력 | `{output_dir}/03_brainstorm_result.md`, `{output_dir}/01_input_data.json`, `{output_dir}/02_explore_research.md` |
 | 참조 | `.claude/skills/deep-research/SKILL.md` Phase 1-2 |
 | 도구 | Read, Write |
-| 산출물 | `{output_dir}/deep_research_plan.md` |
+| 산출물 | `{output_dir}/04_deep_plan.md` |
 
 **동작**:
 
 1. **SCOPE (범위 정의)** — deep-research Phase 1 적용
-   - `brainstorm_result.md` §8 "Phase 4 심화 리서치 가이드" 파싱:
+   - `03_brainstorm_result.md` §8 "Phase 4 심화 리서치 가이드" 파싱:
      - 검증이 필요한 가정 목록
      - 사례/문헌이 필요한 하위 주제 목록
      - 추가 탐색이 필요한 방향
@@ -444,7 +444,7 @@ Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
    - 리서치 범위 경계 정의:
      - **IN-SCOPE**: §8의 검증 필요 가정, 사례/문헌 필요 주제, 추가 탐색 방향
      - **OUT-OF-SCOPE**: Phase 2에서 이미 충분히 수집된 정보 (중복 방지)
-   - `research_exploration.md` 스캔 → 이미 커버된 영역 식별
+   - `02_explore_research.md` 스캔 → 이미 커버된 영역 식별
 
 2. **PLAN (전략 수립)** — deep-research Phase 2 적용
    - §8의 4개 항목을 검색 쿼리로 변환 (한국어 + 영어 병행):
@@ -474,7 +474,7 @@ Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
    - 수행 순서: **로컬 → NBLM → 웹** (로컬/NBLM 결과가 웹 검색 방향을 보완)
    - 우선순위: 핵심(Must) 주제 > 가정 검증 > 중요(Should) 주제
 
-3. `deep_research_plan.md` 작성
+3. `04_deep_plan.md` 작성
 
 ---
 
@@ -482,31 +482,31 @@ Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `deep_research_plan.md`, `input_data.json`, `brainstorm_result.md` §8 |
+| 입력 | `04_deep_plan.md`, `01_input_data.json`, `03_brainstorm_result.md` §8 |
 | 참조 | `.claude/skills/deep-research/SKILL.md` Phase 3 |
 | 도구 | Read, Glob, Bash(NBLM), WebSearch, WebFetch, Write |
-| 산출물 | `{output_dir}/deep_local_nblm.md`, `{output_dir}/web_deep_findings.md` |
+| 산출물 | `{output_dir}/04_deep_local_nblm.md`, `{output_dir}/04_deep_web.md` |
 | 제약 | 웹 검색 20~25회, NBLM 노트북당 3~5쿼리 |
 
 #### 1-1. 로컬 참고자료 심화 재분석 (필수)
 
-> Phase 2에서 생성한 `local_findings.md`를 **재사용하지 않는다**. brainstorm 결과(§8)의 관점에서 원본 파일을 새로 읽고 분석한다.
+> Phase 2에서 생성한 `02_explore_local.md`를 **재사용하지 않는다**. brainstorm 결과(§8)의 관점에서 원본 파일을 새로 읽고 분석한다.
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `input_data.json` → `reference_sources.local_folders`, `brainstorm_result.md` §8 |
+| 입력 | `01_input_data.json` → `reference_sources.local_folders`, `03_brainstorm_result.md` §8 |
 | 도구 | Glob, Read, Bash |
-| 산출물 | `deep_local_nblm.md` 전반부 (로컬 섹션) |
+| 산출물 | `04_deep_local_nblm.md` 전반부 (로컬 섹션) |
 | 조건 | `local_folders`가 빈 배열이면 **로컬 섹션 건너뜀** (NBLM은 독립 실행) |
 
 **동작**:
 
-1. `brainstorm_result.md` §8에서 **심화 분석 관점** 추출:
+1. `03_brainstorm_result.md` §8에서 **심화 분석 관점** 추출:
    - "검증이 필요한 가정" → 로컬 자료에서 검증할 포인트
    - "사례/문헌이 필요한 주제" → 로컬 자료에서 해당 섹션 집중 탐색
    - "추가 탐색 방향" → 로컬 자료에서 관련 내용 재탐색
 
-2. Phase 2 `local_findings.md`를 **인덱스로만** 참조:
+2. Phase 2 `02_explore_local.md`를 **인덱스로만** 참조:
    - 어떤 파일이 분석되었는지 확인 (파일 목록)
    - Phase 2에서 요약된 내용은 읽지 않음 (고착 효과 방지)
 
@@ -533,13 +533,13 @@ Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
 
 #### 1-2. NotebookLM 심화 재분석 (필수)
 
-> Phase 2에서 생성한 `nblm_findings.md`를 **재사용하지 않는다**. brainstorm 결과(§8)를 기반으로 새로운 질문을 생성하여 NBLM에 질의한다.
+> Phase 2에서 생성한 `02_explore_nblm.md`를 **재사용하지 않는다**. brainstorm 결과(§8)를 기반으로 새로운 질문을 생성하여 NBLM에 질의한다.
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `input_data.json` → `reference_sources.notebooklm_urls`, `brainstorm_result.md` §8 |
+| 입력 | `01_input_data.json` → `reference_sources.notebooklm_urls`, `03_brainstorm_result.md` §8 |
 | 도구 | Bash (NBLM 스킬 CLI) |
-| 산출물 | `deep_local_nblm.md` 후반부 (NBLM 섹션) |
+| 산출물 | `04_deep_local_nblm.md` 후반부 (NBLM 섹션) |
 | 조건 | `notebooklm_urls`가 빈 배열이면 **NBLM 섹션 건너뜀** (로컬은 독립 실행) |
 | 제약 | 노트북당 최대 3~5쿼리 |
 
@@ -560,7 +560,7 @@ python3 .claude/skills/nblm/scripts/run.py nblm_cli.py sources --id {notebook_id
 
 **§8 기반 질문 생성 전략**:
 
-`brainstorm_result.md` §8의 항목을 NBLM 질문으로 변환:
+`03_brainstorm_result.md` §8의 항목을 NBLM 질문으로 변환:
 
 1. **가정 검증 질문**: "이 자료에서 '{가정 내용}'을 뒷받침하거나 반박하는 근거가 있는가?"
 2. **사례 탐색 질문**: "이 자료에서 {주제}의 실제 적용 사례나 실습 예시가 있는가?"
@@ -580,7 +580,7 @@ python3 .claude/skills/nblm/scripts/run.py nblm_cli.py sources --id {notebook_id
 3. 노트북 활성화 → 질문 순차 실행
 4. 모든 NBLM 팩트에 `[NB-N]` (NBLM 인용번호) 부여
 
-#### deep_local_nblm.md 산출물 구조
+#### 04_deep_local_nblm.md 산출물 구조
 
 ```markdown
 # Phase 4 로컬/NBLM 심화 재분석 결과
@@ -643,7 +643,7 @@ FACTS(팩트)와 SYNTHESIS(분석)을 명확히 구분:
 - FACTS: 소스에서 직접 인용/요약한 내용 → 반드시 `[N]` 태그
 - SYNTHESIS: 에이전트가 도출한 분석/시사점 → "This suggests..." 등으로 표시
 
-산출물: `web_deep_findings.md`
+산출물: `04_deep_web.md`
 
 ---
 
@@ -651,7 +651,7 @@ FACTS(팩트)와 SYNTHESIS(분석)을 명확히 구분:
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `deep_local_nblm.md`, `web_deep_findings.md`, `research_exploration.md` |
+| 입력 | `04_deep_local_nblm.md`, `04_deep_web.md`, `02_explore_research.md` |
 | 참조 | `.claude/skills/deep-research/SKILL.md` Phase 4, 4.5 |
 | 도구 | Read, Write |
 | 산출물 | 내부 검증 결과 (Step 3에서 통합) |
@@ -720,10 +720,10 @@ FACTS(팩트)와 SYNTHESIS(분석)을 명확히 구분:
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | Step 3 통합 초안 + input_data.json |
+| 입력 | Step 3 통합 초안 + 01_input_data.json |
 | 참조 | `.claude/skills/deep-research/SKILL.md` Phase 7-8 |
 | 도구 | Read, Write, Bash(검증 스크립트) |
-| 산출물 | `{output_dir}/research_deep.md` ★ 최종 산출물 |
+| 산출물 | `{output_dir}/04_deep_research.md` ★ 최종 산출물 |
 
 #### 4-1. Refine — deep-research Phase 7 적용
 
@@ -733,20 +733,20 @@ FACTS(팩트)와 SYNTHESIS(분석)을 명확히 구분:
 
 #### 4-2. Package — deep-research Phase 8 적용 (MD only)
 
-- `research_deep.md` 단일 파일 생성 (HTML/PDF 생략)
+- `04_deep_research.md` 단일 파일 생성 (HTML/PDF 생략)
 - 검증 스크립트 실행 (가능한 경우):
 
 ```bash
 # 인용 검증
-python3 .claude/skills/deep-research/scripts/verify_citations.py --report {output_dir}/research_deep.md
+python3 .claude/skills/deep-research/scripts/verify_citations.py --report {output_dir}/04_deep_research.md
 
 # 보고서 구조/품질 검증
-python3 .claude/skills/deep-research/scripts/validate_report.py --report {output_dir}/research_deep.md
+python3 .claude/skills/deep-research/scripts/validate_report.py --report {output_dir}/04_deep_research.md
 ```
 
 - 검증 실패 시: 1회 자동 수정 → 2회 실패 시 한계 명시 후 진행
 
-#### 4-3. research_deep.md 산출물 구조
+#### 4-3. 04_deep_research.md 산출물 구조
 
 ```markdown
 # 심화 리서치 결과

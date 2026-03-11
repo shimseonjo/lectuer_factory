@@ -1,5 +1,5 @@
 {
-  "$schema": "input_data.json 스키마 — input-agent가 생성하여 후속 Phase에 전달",
+  "$schema": "01_input_data.json 스키마 — input-agent가 생성하여 후속 Phase에 전달",
   "required": {
     "topic": {
       "type": "string",

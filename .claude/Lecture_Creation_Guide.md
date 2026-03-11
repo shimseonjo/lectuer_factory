@@ -215,7 +215,7 @@ writer-agent가 `06_write_lecture_outline.md` 내부에 `§시간표` 섹션을 
 | 1 | 입력 수집 | input-agent | 구성안 자동 로드 + 교수 모델·활동 전략·형성평가·시간 비율 등 6개 필수질문 수집 |
 | 2 | 탐색적 리서치 | research-agent | 교수법 사례, Gagne/Hunter 적용 패턴, 발문·실습·형성평가 도구 사례 탐색 |
 | 3 | 브레인스토밍 | brainstorm-agent | 조건부 3~5축 발산(발문·활동·사례·PBL시나리오·평가), Bloom's 발문 배치, Gagne-GRR 매핑, SLO 정렬, 페르소나 시뮬레이션, 다관점 검증 |
-| 4 | 심화 리서치 | research-agent | 브레인스토밍 기반 예시 자료, 보충 콘텐츠, 참고 문헌 |
+| 4 | 심화 리서치 | research-agent | 브레인스토밍 §11 기반 4대 영역(교수법 사례·발문 뱅크·활동 자료·형성평가 도구) 심화 수집, SLO-활동-평가 삼각 정렬 검증 |
 | 5 | 교안 구조 설계 | architecture-agent | 교수 모델별 도입-전개-정리 구조, Gagne 사태 배치, SLO-평가 매핑, 시간표 설계 |
 | 6 | 교안 작성 | writer-agent | 스크립트 상세도별 작성, 발문·활동·평가문항, 분할 작업(chunk) 지원 |
 | 7 | 품질 검토 | review-agent | 목표-활동-평가 정렬, SLO별 형성평가 커버리지, 시간 비율 준수 |
@@ -297,6 +297,25 @@ writer-agent가 `06_write_lecture_outline.md` 내부에 `§시간표` 섹션을 
 **산출물**: `03_brainstorm_divergent.md` → `03_brainstorm_convergent.md` → `03_brainstorm_review.md` → `03_brainstorm_result.md` (★ 최종)
 
 상세 워크플로우: `.claude/agents/brainstorm-agent/AGENT.md`의 "강의교안 브레인스토밍 (Phase 3) 세부 워크플로우" 섹션 참조
+
+#### Phase 4 심화 리서치 — deep-research 스킬 적용 (교안 맥락)
+
+- 스킬: `199-biotechnologies/claude-deep-research-skill@deep-research` (설치 완료, `--copy`)
+- research-agent가 `.claude/skills/deep-research/SKILL.md`의 8단계 파이프라인을 교안 설계 맥락에 적용
+- 8단계: Scope → Plan → Retrieve → Triangulate → Outline Refinement → Synthesize → Critique → Refine → Package
+- 브레인스토밍 결과(`03_brainstorm_result.md` §11)를 입력으로 4대 영역 심화 수집:
+  - **A. 교수법 적용 사례**: 교수 모델(Hunter/PBL/플립러닝)별 레슨 플랜 패턴, Gagne 사태별 구현, GRR 단계별 활동
+  - **B. 발문 뱅크**: Bloom's 수준별(L1~L6) 발문 예시, 교수 모델별 단계별 발문 배치
+  - **C. 활동/보충 자료**: 실습 가이드, 워크시트, 루브릭, 실생활 사례
+  - **D. 형성평가 도구**: SLO별 매핑된 평가 도구, 교수 모델 × 평가 유형별 추천
+- 교안 특화 검증 3기준: 교수 모델 정합성, SLO-활동-평가 삼각 정렬(Bloom's 수준 일치), 인지 부하 적정성
+- 비판적 자기검증 (Critique): 교수법 편향, 실용성, Bloom's 균형, SLO 커버리지, 학습자 접근성
+- 구성안 심화 리서치(`01_outline/04_deep_research.md`)의 CK 결과를 상속하고, PCK(교수학적 내용 지식) 수집에 집중
+- 조건부 예산 조정: `gagne_display`, `questioning_design`, `formative_assessment`, `teaching_model`에 따라 검색 예산·범위 동적 조정
+- 고착 효과 필터 (교안 심화 버전): 타강의 교안 스크립트 전사 금지, 교수법 패턴·활동 유형·발문 패턴은 허용
+- 검증 스크립트: `verify_citations.py`, `validate_report.py` 활용
+- 모드 선택: Standard(5-10분, 기본) 또는 Deep(10-20분, 철저 검증)
+- 상세 워크플로우: `.claude/agents/research-agent/AGENT.md`의 "강의교안 심화 리서치" 섹션 참조
 
 #### 교수 모델별 교안 구조
 

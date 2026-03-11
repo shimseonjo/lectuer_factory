@@ -91,9 +91,27 @@ $ARGUMENTS
 - `gagne_display.mode = none` → Step 2에서 Gagne 매핑 생략, GRR만 수행
 - `teaching_model = mixed` → 차시별 교수 모델 분기하여 발문 배치 패턴 개별 적용
 
-### Phase 4: 심화 리서치 → research-agent (브레인스토밍 기반 예시·보충 콘텐츠 수집)
+### Phase 4: 심화 리서치 → research-agent (브레인스토밍 기반 교수법 사례·발문·활동·평가 심화 수집)
 
-<!-- TODO: Phase 4 구현 예정 -->
+**지시**: 교안 브레인스토밍 결과를 기반으로 심화 리서치를 수행하세요. 교수법 적용 사례, Bloom's 수준별 발문 뱅크, 학습활동/실습 자료, 형성평가 도구를 검증·수집하고, SLO-활동-평가 삼각 정렬을 확인합니다.
+**입력 파일**:
+  - `{output_dir}/03_brainstorm_result.md` (§11 "Phase 4 심화 리서치 가이드")
+  - `{output_dir}/01_input_data.json` (script_settings, instructional_model_map)
+  - `{output_dir}/02_explore_research.md` (Phase 2 탐색적 리서치 결과)
+**참조 파일**:
+  - `{outline_dir}/04_deep_research.md` (구성안 심화 리서치 — CK 수준 상속, 중복 수집하지 않음)
+  - `.claude/skills/deep-research/SKILL.md` (8단계 파이프라인 방법론 레퍼런스)
+**산출물 위치**: `{output_dir}/` (04_deep_plan.md, 04_deep_local_nblm.md, 04_deep_web.md, 04_deep_research.md)
+**모드**: 심화 (deep dive) — 구체적 사례·발문·평가도구 수집 허용, 타강의 교안 스크립트 전사 금지
+**제약**: 총 웹 검색 20~25회 이내, NBLM 쿼리 노트북당 3~5회 이내
+**워크플로우**: Step 0(범위+계획) → Step 1(로컬+NBLM+웹) → Step 2(삼각측량+검증) → Step 3(합성+비판) → Step 4(산출물)
+**상세**: `.claude/agents/research-agent/AGENT.md`의 "강의교안 심화 리서치" 섹션 참조
+
+**조건부 분기**:
+- `gagne_display.mode == "none"` → Gagne 사태별 검색 생략, 교수법 패턴에 통합
+- `questioning_design.include == false` → 발문 뱅크 검색 예산 축소(1~2회), 활동·평가로 재배분
+- `formative_assessment.type == "none"` → 형성평가 도구 검색 예산 축소(1회), 활동으로 재배분
+- `teaching_model` 값에 따라 리서치 질문·검색 쿼리 분기 (직접교수법/PBL/플립러닝/혼합)
 
 ### Phase 5: 교안 구조 설계 → architecture-agent (도입-전개-정리, Gagne 사태 배치)
 

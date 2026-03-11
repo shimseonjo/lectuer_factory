@@ -264,7 +264,9 @@ writer-agent가 `06_write_lecture_outline.md` 내부에 `§시간표` 섹션을 
 - 5자료원 통합: 01_input_data.json + 구성안 02_explore_research.md(상속) + 로컬 참고자료 + NotebookLM + 인터넷 리서치
 - 구성안에서 이미 수집된 주제 개요·트렌드·학습자 분석은 **상속** (중복 수집 방지)
 - 교수 모델(`teaching_model`)에 따라 리서치 질문 분기: 직접교수법(Hunter) / PBL(시나리오) / 플립러닝(Before-During) / 혼합
+- Gagne 사태 적용 사례를 공통 리서치 질문에 포함, `gagne_display` 값(전체 9/핵심 5/라벨 없음)에 따라 탐색 깊이 분기
 - 5축 통합 알고리즘 (교안 버전): 교수법 패턴 → 발문 설계 → 학습활동 → 형성평가 도구 → 실생활 사례
+- 서브토픽 검색 예산 조건부 조정: `questioning_design` "제외" 시 발문 예산 축소→활동·평가 재배분, `gagne_display` "라벨 없음" 시 Gagne 검색 생략
 - 고착 효과 필터 (교안 버전): 다른 강의의 교안 스크립트 전사 금지, 교수법 패턴·활동 유형·발문 패턴은 유지
 - §7 리서치 인사이트에 Bloom's 수준 기초 마킹 추가 (Phase 3 발문 설계 브레인스토밍용)
 - 상세 워크플로우: `.claude/agents/research-agent/AGENT.md`의 "강의교안 탐색적 리서치" 섹션 참조

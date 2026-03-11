@@ -113,15 +113,160 @@ PBL + AI-first, 실습 비율 50% 이상
 2. **NotebookLM**: "NotebookLM 공유 URL을 입력하세요" 형태로 질문.
    선택지 없이 Other(직접 입력)로 URL을 받음.
 
+## 강의교안 입력 수집
+
+### 개요
+
+강의교안은 강의구성안의 후속 워크플로우이므로, 구성안의 최종 산출물에서 대부분의 정보를 자동 로드한다. 사용자에게는 교안 작성에 필요한 최소한의 추가 질문만 수집한다.
+
+### Step 0: 구성안 탐색 및 선택
+
+1. `lectures/` 폴더를 Glob으로 스캔하여 `YYYY-MM-DD_*` 패턴의 강의 폴더 목록을 수집
+2. 날짜 기준 최신순 정렬
+3. AskUserQuestion으로 구성안 선택:
+
+| 상황 | 선택지 구성 |
+|------|-----------|
+| 폴더 0개 또는 `lectures/` 없음 | 오류: "강의 폴더를 찾을 수 없습니다. `/lecture-outline`을 먼저 실행하세요." → 종료 |
+| 폴더 1개 | 해당 폴더 + "기타 직접 입력" = 2개 |
+| 폴더 2개 | 2개 폴더 + "기타 직접 입력" = 3개 |
+| 폴더 3개+ | 최신 3개 + "기타 직접 입력" = 4개 |
+
+- "기타 직접 입력" 선택 시: `lectures/` 하위 폴더명만 입력받음 (절대경로 불필요)
+- 선택된 폴더의 `01_outline/06_write_lecture_outline.md` 존재 확인
+  - 파일 없음 → 오류: "선택한 강의의 구성안 파일이 없습니다. `/lecture-outline`을 먼저 완료하세요." → 종료
+
+### Step 1: 구성안 자동 파싱 (사용자 개입 없음)
+
+`06_write_lecture_outline.md`와 `01_outline/01_input_data.json`에서 다음 항목을 파싱:
+
+| 분류 | 파싱 소스 | 파싱 항목 | JSON 키 |
+|------|----------|----------|---------|
+| 기본 메타데이터 | 구성안 §메타데이터 | 강의 주제 | `inherited.topic` |
+| 기본 메타데이터 | 구성안 §메타데이터 | 대상 학습자 | `inherited.target_learner` |
+| 기본 메타데이터 | 구성안 §메타데이터 | 강의 형태 | `inherited.format` |
+| 기본 메타데이터 | 구성안 §메타데이터 | 시간 구성 | `inherited.schedule` |
+| 기본 메타데이터 | 구성안 §메타데이터 | 교수 전략 | `inherited.pedagogy` |
+| 기본 메타데이터 | 구성안 §메타데이터 | 톤·스타일 | `inherited.tone` |
+| 학습 목표 | 구성안 §2 | 목표 목록 + Bloom's 수준 | `inherited.learning_goals` |
+| 핵심 질문 | 구성안 §3 | Essential Questions 목록 | `inherited.essential_questions` |
+| 평가 체계 | 구성안 §4 | 총괄/형성 평가 방식 | `inherited.assessment` |
+| 차시 구조 | 구성안 §5 | Phase A~D 구조, 일별 개요 | `inherited.course_structure` |
+| 차시 상세 | 구성안 §6 | 차시별 주제, BOPPPS 구조 | `inherited.sessions` |
+| 선수 지식 | 구성안 input_data.json | prerequisites | `inherited.prerequisites` |
+| 제외 범위 | 구성안 input_data.json | exclusions | `inherited.exclusions` |
+| 키워드 | 구성안 input_data.json | keywords | `inherited.keywords` |
+
+**파싱 우선순위**:
+1. `06_write_lecture_outline.md` (최신 확정본)
+2. `01_outline/01_input_data.json` (보완용: keywords, prerequisites 등)
+- 두 파일 모두 존재해야 진행. 파싱 불가 항목은 `null` 처리 (Phase 6에서 처리)
+
+**`theory_practice_ratio` fallback**: 구성안에 Phase별 비율이 없으면 기본값 적용
+- Phase A: 70:30 / Phase B: 50:50 / Phase C: 30:70 / Phase D: 10:90
+
+**`primary_teaching_model` 자동 탐지**: `pedagogy` 문자열에서 키워드 기반 추론
+
+| 탐지 키워드 | 결과 | confidence |
+|---|---|---|
+| "PBL", "프로젝트 기반", "Project-Based" | `pbl` | high |
+| "직접교수", "Hunter", "Explicit Instruction" | `direct_instruction` | high |
+| "플립", "flipped", "사전학습", "거꾸로" | `flipped` | high |
+| "액티브", "active", 실습 비율 70%+ | `active_learning` | high |
+| 실습 비율 40~60% | `hybrid` | medium |
+| 키워드 없음 또는 모호 | `direct_instruction` (기본값) | low |
+
+low confidence 시 metadata에 경고 기록.
+
+### Step 2: 필수 질문 (2개)
+
+#### SQ1: 교안 작성 범위
+
+```
+질문: "어떤 차시의 교안을 작성할까요?"
+선택지:
+1. 전체 차시 (모두 작성)
+2. 특정 Day 선택
+3. 특정 교시 선택
+```
+
+- "전체" → `target_scope.type = "전체"`, `session_ids = 전체 교시 번호 배열`
+- "Day 선택" → 후속 질문으로 Day 번호 입력 → 해당 Day의 교시 번호 배열
+- "교시 선택" → 후속 질문으로 교시 번호 입력 → 해당 교시만
+
+#### SQ2: 스크립트 상세도
+
+```
+질문: "스크립트를 어느 수준으로 작성할까요?"
+선택지:
+1. 키워드 중심 (핵심 개념, 발문 포인트, 타이밍 표시)
+2. 반구조화 스크립트 (단락별 요점 + 주요 문장) [기본값]
+3. 완전 스크립트 (교수자가 그대로 읽을 수 있는 전문)
+```
+
+### Step 3: 선택 질문 게이팅
+
+```
+질문: "세부 설정을 조정하시겠습니까?"
+선택지:
+1. 기본값으로 진행 (Recommended)
+2. 세부 설정 조정
+```
+
+- "기본값으로 진행" → SQ3~SQ5 기본값 적용, Step 4로 이동
+- "세부 설정 조정" → SQ3 → SQ4 → SQ5 순차 질문
+
+#### SQ3: Gagne 9사태 적용 수준
+
+```
+선택지:
+1. 전체 9사태 명시 (모든 단계를 교안에 라벨링)
+2. 핵심 5사태만 (1.주의획득·2.목표고지·3.선수학습회상·6.수행유도·9.파지와전이촉진) [기본값]
+3. 라벨 없음 (흐름으로만 작성)
+```
+
+- 핵심 5사태 선택 시: 4(자극제시)·5(학습안내)는 전개부 본문 흐름에 내재화됨
+
+#### SQ4: 발문 설계 포함 여부
+
+```
+선택지:
+1. 포함 — Bloom's 수준 태깅 + 예상 답변 포함
+2. 포함 — 발문만 (예상 답변 제외) [기본값]
+3. 제외
+```
+
+- 차시당 목표 발문 수: 3~5개 (기본값 4개)
+
+#### SQ5: 실습 가이드 상세도
+
+```
+선택지:
+1. 완전 가이드 (학습자가 읽으며 따라할 수 있는 수준)
+2. 단계 목록 + 핵심 지시 [기본값]
+3. 활동 제목과 소요 시간만
+```
+
+### Step 4: JSON 생성 및 완료
+
+1. `02_script/` 폴더 생성 (없으면)
+2. 파싱된 `inherited` + `script_settings` + `source` + `metadata` 통합
+3. `02_script/01_input_data.json` 저장
+4. 수집된 설정 요약을 사용자에게 출력
+
+**JSON 스키마**: 설계 문서 `.claude/temp/design_script_phase1.md` B섹션 참조
+
 ## 워크플로우별 동작
 
 | 워크플로우 | 수집 항목 |
 |-----------|----------|
 | 강의구성안 | Q1~Q12 질문 구조 → 01_input_data.json 생성 |
-| 강의교안 | 구성안 로드, 교수법 선택, 평가 전략 |
+| 강의교안 | 구성안 자동 로드 + SQ1~SQ5 질문 → 01_input_data.json 생성 |
 | 슬라이드 기획 | 교안 로드, 슬라이드 도구/형식 선택 |
 | 슬라이드 생성 | 기획안 로드, 출력 형식 선택 (Marp/Slidev/Gamma 등) |
 
 ## 산출물
 
-`01_input_data.json` — 스키마는 `.claude/templates/input-schema.json` 참조
+`01_input_data.json` — 워크플로우별 스키마가 다름
+- 강의구성안: `.claude/templates/input-schema.json` 참조
+- 강의교안: `.claude/temp/design_script_phase1.md` B섹션 참조

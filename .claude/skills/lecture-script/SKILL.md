@@ -30,25 +30,19 @@ $ARGUMENTS
 
 2. **구성안 자동 파싱**: `06_write_lecture_outline.md` + `01_input_data.json`에서 inherited 필드 전체 추출
    - `total_sessions` 자동 산출 (sessions 배열 길이)
-   - `primary_teaching_model` 자동 탐지 (pedagogy 키워드 기반)
+   - `pedagogy`에서 교수 모델·활동 전략 자동 추론 (설계 문서 §F 참조)
    - `theory_practice_ratio` fallback 적용 (Phase A:70:30, B:50:50, C:30:70, D:10:90)
 
-3. **SQ1 — 교안 작성 범위**: AskUserQuestion
-   ```
-   "어떤 차시의 교안을 작성할까요?"
-   1. 전체 차시 (모두 작성)
-   2. 특정 Day 선택
-   3. 특정 교시 선택
-   ```
-   - "Day 선택"/"교시 선택" → 후속 질문으로 번호 입력받아 session_ids 산출
+3. **필수 질문 1회차**: AskUserQuestion (3개 묶음)
+   - **SQ1 — 교안 작성 범위**: 전체 차시(추천) / 특정 차시 선택
+   - **SQ1a — 교수 모델**: {추론결과}(추천) / 직접교수법 / PBL / 플립러닝
+   - **SQ1b — 활동 전략** (multiSelect): 개인실습 / 그룹활동 / 토론·발문 / 프로젝트
+   - SQ1 "특정 차시" → 후속 질문으로 Day 번호 입력받아 session_ids 산출
 
-4. **SQ2 — 스크립트 상세도**: AskUserQuestion
-   ```
-   "스크립트를 어느 수준으로 작성할까요?"
-   1. 키워드 중심 (핵심 개념, 발문 포인트, 타이밍 표시)
-   2. 반구조화 스크립트 (단락별 요점 + 주요 문장) [기본값]
-   3. 완전 스크립트 (교수자가 그대로 읽을 수 있는 전문)
-   ```
+4. **필수 질문 2회차**: AskUserQuestion (3개 묶음)
+   - **SQ2 — 스크립트 상세도**: 완전 스크립트 / 반구조화(추천) / 불릿 노트
+   - **SQ3 — 형성평가 유형**: 섹션별 체크(추천) / Exit Ticket / 실습 통합 / 없음
+   - **SQ4 — 시간 비율**: 교수 모델 기반 자동(추천) / 직접 입력
 
 5. **추가 설정 게이팅**: AskUserQuestion
    ```
@@ -56,12 +50,14 @@ $ARGUMENTS
    1. 기본값으로 진행 (Recommended)
    2. 세부 설정 조정
    ```
-   - "기본값" → SQ3~SQ5 기본값 적용 (gagne: core_5, 발문: 포함/답변제외/4개, 실습: step_list)
-   - "세부 설정" → SQ3(Gagne) → SQ4(발문) → SQ5(실습 가이드) 순차 질문
+   - "기본값" → SQ5~SQ7 기본값 적용 (gagne: core_5, 발문: 포함/답변제외/4개, 실습: step_list)
+   - "세부 설정" → SQ5(Gagne) → SQ6(발문) → SQ7(실습 가이드) 순차 질문
 
 6. **output_dir 결정**: `lectures/{선택한 강의 폴더}/02_script/`
    - 폴더 생성 (없으면)
    - `01_input_data.json` 저장 (inherited + script_settings + source + metadata)
+   - `instructional_model_map` 자동 파생 (설계 문서 §E 매핑 테이블 기반)
+   - Phase 1 완료 검증 (설계 문서 §H 기준: 필수 필드 존재, time_ratio 합계 100, enum 유효성)
    - 수집된 설정 요약 출력
 
 ### Phase 2: 탐색적 리서치 → research-agent (교수법 사례, 유사 교안 벤치마킹)

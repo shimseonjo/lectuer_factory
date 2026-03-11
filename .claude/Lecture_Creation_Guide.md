@@ -459,7 +459,8 @@ lectures/
     │   ├── 02_explore_plan.md                   # Phase 2: 탐색적 리서치 계획
     │   ├── 02_explore_research.md               # Phase 2: 리서치 결과
     │   ├── 03_brainstorm_result.md              # Phase 3: 브레인스토밍 최종 ★
-    │   ├── 04_deep_research.md                  # Phase 4: 심화 리서치
+    │   ├── 04_deep_plan.md                      # Phase 4: 심화 리서치 계획
+    │   ├── 04_deep_research.md                  # Phase 4: 심화 리서치 최종 ★
     │   ├── 05_arch_lesson_plan.md               # Phase 5: 차시별 레슨 플랜 구조 설계
     │   ├── 06_write_script_draft.md             # Phase 6: 교안 초안 (중간)
     │   ├── 06_write_lecture_script.md           # Phase 6: 최종 교안 ★
@@ -485,6 +486,8 @@ lectures/
 03_brainstorm_divergent.md       # Phase 3 중간: 발산적 탐색 (Step 1)
 03_brainstorm_convergent.md      # Phase 3 중간: 수렴 및 매핑 (Step 2)
 03_brainstorm_review.md          # Phase 3 중간: 다관점 검증 (Step 3)
+04_deep_local_nblm.md            # Phase 4 중간: 로컬/NBLM 심화 재분석 (Step 1)
+04_deep_web.md                   # Phase 4 중간: 웹 심화 수집 결과 (Step 1)
 06_write_script_draft.md         # Phase 6 중간: 교안 초안
 ```
 

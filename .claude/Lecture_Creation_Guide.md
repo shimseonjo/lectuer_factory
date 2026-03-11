@@ -216,7 +216,7 @@ writer-agent가 `06_write_lecture_outline.md` 내부에 `§시간표` 섹션을 
 | 2 | 탐색적 리서치 | research-agent | 교수법 사례, Gagne/Hunter 적용 패턴, 발문·실습·형성평가 도구 사례 탐색 |
 | 3 | 브레인스토밍 | brainstorm-agent | 조건부 3~5축 발산(발문·활동·사례·PBL시나리오·평가), Bloom's 발문 배치, Gagne-GRR 매핑, SLO 정렬, 페르소나 시뮬레이션, 다관점 검증 |
 | 4 | 심화 리서치 | research-agent | 브레인스토밍 §11 기반 4대 영역(교수법 사례·발문 뱅크·활동 자료·형성평가 도구) 심화 수집, SLO-활동-평가 삼각 정렬 검증 |
-| 5 | 교안 구조 설계 | architecture-agent | 교수 모델별 도입-전개-정리 구조, Gagne 사태 배치, SLO-평가 매핑, 시간표 설계 |
+| 5 | 교안 구조 설계 | architecture-agent | 레슨 레벨 Backward Design, 교수 모델별 도입-전개-정리 구조, Gagné 사태·발문·GRR 배치, 분 단위 시간 설계, 3중 검증(시간합산+SLO정렬+Gagné순차) |
 | 6 | 교안 작성 | writer-agent | 스크립트 상세도별 작성, 발문·활동·평가문항, 분할 작업(chunk) 지원 |
 | 7 | 품질 검토 | review-agent | 목표-활동-평가 정렬, SLO별 형성평가 커버리지, 시간 비율 준수 |
 
@@ -342,6 +342,30 @@ writer-agent가 `06_write_lecture_outline.md` 내부에 `§시간표` 섹션을 
 | 섹션별 체크 | 퀴즈, 화이트보드 응답 | 진행 발표, 동료 피드백 | 개념 적용 미니 과제 |
 | Exit Ticket | 3-2-1 반성, 1분 작문 | 성찰 일지 | "사전학습과 연결된 새 발견" |
 | 실습 통합 | 수행 체크리스트, 코드 리뷰 | 루브릭 기반 산출물 평가 | 실습 결과 동료 검토 |
+
+#### Phase 5: 교안 구조 설계 상세
+
+**핵심 전환**: 구성안 Phase 5가 "어떤 차시에 무엇을 가르칠까"(코스 레벨)를 설계했다면, 교안 Phase 5는 **"각 차시 안에서 어떻게 가르칠까"**(레슨 레벨)를 분 단위로 상세화한다.
+
+**Compositional Stacking 상속**: 구성안의 Stage 1(학습목표)·Stage 2(평가 프레임)는 그대로 상속하고, Stage 3 내부만 교수 모델별 차시 구조로 확장.
+
+- 4단계 워크플로우: Step 0(컨텍스트 로드+교수 모델 결정) → Step 1(레슨 레벨 Backward Design: SLO 정제, 형성평가 매핑, 활동 선택) → Step 2(차시별 내부 구조: 도입-전개-정리, Gagné, 발문, GRR, 분 단위 시간) → Step 3(3중 검증+산출물 작성)
+- 교수 모델별 차시 내부 구조 템플릿: 직접교수법(Hunter+GRR), PBL(6단계), 플립러닝(Before/During/After)
+- Gagné 사태 3모드 배치: `all_9`(9사태 전부) / `core_5`(핵심 5사태: 1·2·3·6·9) / `none`(라벨 생략)
+- GRR Phase별 비율 자동 배치: Phase A(I Do 70%) → B(40/40/20) → C(You Do 70%) → D(You Do 90%)
+- Bloom's 기반 발문 배치: 교수 모델 × 수업 단계별 패턴에 따라 차시당 N개 배분
+- 시간 비율 자동 산출: 교수 모델별 기본값(직접교수법 10/60/30, PBL 10/75/15, 플립러닝 5/80/15) + Phase별 보정(A: 도입+5%, D: 정리-5%/전개+5%)
+- 조건부 분기: `gagne_display.mode`, `questioning_design.include`, `formative_assessment.type`, `time_ratio.source`, `teaching_model`에 따라 설계 범위·검증 항목 동적 조정
+
+**3중 검증** (`05_arch_lesson_plan.md` 완성 전 필수):
+
+| 검증 | 기준 | FAIL 시 처리 |
+|------|------|------------|
+| 시간 합산 | 차시별 하위 단계 합 = session_minutes (±1분), 전체 도입:전개:정리 비율 오차 5% 이내 | 유연한 활동에서 시간 조정 |
+| SLO 정렬 | SLO 완전 커버리지, Bloom's 일치, 형성평가 커버리지, 활동-평가 정합 | 미배치 SLO에 활동/평가 추가 |
+| Gagné 순차 | 배치 순서 준수, 누락 없음, 각 사태 ≥1분 | 사태 재배치 또는 시간 재배분 |
+
+- 상세 워크플로우: `.claude/agents/architecture-agent/AGENT.md`의 "강의교안 레슨 플랜 설계 (Phase 5) 세부 워크플로우" 섹션 참조
 
 **데이터 흐름**:
 ```
@@ -552,6 +576,7 @@ lectures/
 | **Hunter 6단계** | 교안 (직접교수법) | 복습 → 목표제시 → 제시 → 시범 → 안내연습 → 독립연습 |
 | **PBL 6단계** | 교안 (PBL) | 문제 시나리오 → 문제 정의 → 탐구 → 해결책 개발 → 발표 → 성찰 |
 | **Before/During/After** | 교안 (플립러닝) | 사전학습 확인 → 개념 명확화 → 그룹 활동 → 심화 적용 → 사후 과제 |
+| **GRR** | 교안 | I Do(교사 시범) → We Do(안내 연습) → You Do(독립 수행), Phase A~D별 비율 자동 배치 |
 | **QM Rubric** | 품질 검토 | 8개 일반 기준, 목표-활동-평가 정렬 |
 | **2-Pass Research** | 구성안, 교안 | 탐색적 리서치(문제 공간) → 브레인스토밍 → 심화 리서치(아이디어 검증) |
 | **Assertion-Evidence** | 슬라이드 | 주장 제목 + 시각 증거 (불릿포인트 대체) |

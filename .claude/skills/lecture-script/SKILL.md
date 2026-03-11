@@ -136,7 +136,8 @@ lectures/YYYY-MM-DD_{강의명}/02_script/
 ├── 03_brainstorm_convergent.md   # Phase 3: 수렴 및 매핑 (Step 2)
 ├── 03_brainstorm_review.md       # Phase 3: 다관점 검증 (Step 3)
 ├── 03_brainstorm_result.md        # Phase 3: 브레인스토밍 최종 통합 ★ (Step 4)
-├── 04_deep_research.md            # Phase 4: 심화 리서치
+├── 04_deep_plan.md                # Phase 4: 심화 리서치 계획
+├── 04_deep_research.md            # Phase 4: 심화 리서치 최종 ★
 ├── 05_arch_lesson_plan.md         # Phase 5: 차시별 레슨 플랜 구조 설계
 ├── 06_write_script_draft.md       # Phase 6: 교안 초안 (중간)
 ├── 06_write_lecture_script.md     # Phase 6: 최종 교안 ★

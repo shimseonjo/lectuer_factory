@@ -212,30 +212,82 @@ writer-agent가 `06_write_lecture_outline.md` 내부에 `§시간표` 섹션을 
 
 | Phase | 단계 | 에이전트 | 핵심 작업 |
 |-------|------|---------|----------|
-| 1 | 입력 수집 | input-agent | 구성안 로드, 교수법 선택(직접교수/PBL/플립러닝/액티브러닝) |
-| 2 | 탐색적 리서치 | research-agent | 교수법 사례, 유사 교안 벤치마킹, 실생활 사례 탐색 (방향 설정) |
+| 1 | 입력 수집 | input-agent | 구성안 자동 로드 + 교수 모델·활동 전략·형성평가·시간 비율 등 6개 필수질문 수집 |
+| 2 | 탐색적 리서치 | research-agent | 교수법 사례, Gagne/Hunter 적용 패턴, 발문·실습·형성평가 도구 사례 탐색 |
 | 3 | 브레인스토밍 | brainstorm-agent | 발문 설계(Bloom's 기반), 학습활동 아이디어, 실생활 사례 구상 |
 | 4 | 심화 리서치 | research-agent | 브레인스토밍 기반 예시 자료, 보충 콘텐츠, 참고 문헌 |
-| 5 | 교안 구조 설계 | architecture-agent | 도입-전개-정리(10:70:20), Gagne 9가지 수업사태 적용, 시간 배분 |
-| 6 | 교안 작성 | writer-agent | script-template.md 기반, 섹션별 스크립트/발문/활동/평가문항/발표자 노트 |
-| 7 | 품질 검토 | review-agent | 목표-활동-평가 정렬, 시간 배분 현실성, 용어/톤 일관성 |
+| 5 | 교안 구조 설계 | architecture-agent | 교수 모델별 도입-전개-정리 구조, Gagne 사태 배치, SLO-평가 매핑, 시간표 설계 |
+| 6 | 교안 작성 | writer-agent | 스크립트 상세도별 작성, 발문·활동·평가문항, 분할 작업(chunk) 지원 |
+| 7 | 품질 검토 | review-agent | 목표-활동-평가 정렬, SLO별 형성평가 커버리지, 시간 비율 준수 |
 
 **적용 프레임워크**:
-- Madeline Hunter 8단계 (직접교수법)
-- Gagne의 9가지 수업사태
+- Madeline Hunter 6단계 (직접교수법)
+- PBL 6단계 (문제기반학습)
+- Before/During/After (플립러닝)
+- Gagne의 9가지 수업사태 (전체 9사태 / 핵심 5사태 / 라벨 없음 선택 가능)
 - Gradual Release of Responsibility (I Do → We Do → You Do)
 
-**교안 구조**:
-```
-도입 (10-15%): 주의집중 → 동기부여 → 선수학습 확인 → 학습목표 제시
-전개 (70-80%): 내용제시 → 시범 → 안내연습 → 독립연습 (× 섹션 수)
-정리 (10-15%): 핵심요약 → 실천방법 → 과제안내 → 차시예고
-```
+#### Phase 1: 입력 수집 상세
+
+**구성안 자동 로드 (사용자 개입 없음)**:
+`01_outline/06_write_lecture_outline.md` + `01_outline/01_input_data.json`에서 14개 항목 자동 파싱
+(topic, target_learner, format, schedule, pedagogy, tone, learning_goals, essential_questions, assessment, course_structure, sessions, prerequisites, exclusions, keywords)
+
+**필수 질문 (6개)** — AskUserQuestion 2회 묶음 호출 (3+3)
+
+| # | 카테고리 | 질문 | 입력 형태 |
+|---|---------|------|----------|
+| SQ1 | 교안 작성 범위 | 전체 차시 vs 특정 차시 선택 | 선택지 (기본: 전체) |
+| SQ1a | 교수 모델 | 직접교수법 / PBL / 플립러닝 / 혼합 | 선택지 (pedagogy에서 자동 추론 후 추천) |
+| SQ1b | 활동 전략 | 개인실습 / 그룹활동 / 토론·발문 / 프로젝트 | 복수 선택 (pedagogy에서 자동 추론) |
+| SQ2 | 스크립트 상세도 | 완전 스크립트 / 반구조화 / 불릿 노트 | 선택지 (기본: 반구조화) |
+| SQ3 | 형성평가 유형 | 섹션별 체크 / Exit Ticket / 실습 통합 / 없음 | 선택지 (기본: 섹션별 체크) |
+| SQ4 | 시간 비율 | 교수 모델 기반 자동 / 직접 입력 | 선택지 (기본: 자동) |
+
+**선택 질문 (3개)** — 게이팅 방식. "기본값으로 진행" 선택 시 전체 스킵
+
+| # | 카테고리 | 기본값 |
+|---|---------|--------|
+| SQ5 | Gagne 9사태 적용 수준 | 핵심 5사태만 (1·2·3·6·9) |
+| SQ6 | 발문 설계 포함 여부 | 포함 — 발문만 (예상 답변 제외), 차시당 4개 |
+| SQ7 | 실습 가이드 상세도 | 단계 목록 + 핵심 지시 |
+
+**교수 모델 자동 추론**: `pedagogy` 텍스트에서 키워드 기반 추론 → SQ1a 추천값 생성
+- "PBL", "프로젝트 기반" → `pbl` / "플립", "flipped" → `flipped` / "직접교수", "강의식" → `direct_instruction`
+- 매칭 없음 → `direct_instruction` (low confidence, 경고 기록)
+
+스키마: `.claude/temp/design_script_phase1.md` B섹션 참조
+
+#### 교수 모델별 교안 구조
+
+| 교수 모델 | 주 모델 | 도입 | 전개 | 정리 | GRR 중심 |
+|-----------|---------|------|------|------|---------|
+| **직접교수법** | Hunter 6단계 | 10% (복습→목표제시) | 60% (제시→시범→안내연습→독립연습) | 30% (피드백→복습→차시예고) | I Do → We Do → You Do |
+| **PBL** | PBL 6단계 | 10% (문제 시나리오→목표 연결) | 75% (문제정의→탐구→해결책개발) | 15% (발표→성찰→동료평가) | You Do Together 중심 |
+| **플립러닝** | Before/During/After | 5% (사전학습 확인→핵심 보완) | 80% (개념명확화→그룹활동→심화적용) | 15% (피드백→사후과제안내) | We Do + You Do Together |
+| **혼합** | 차시별 조합 | 10% | 70% | 20% | 차시별 개별 |
+
+**교수 모델별 Bloom's 발문 수준**:
+
+| 수업 단계 | 직접교수법 | PBL | 플립러닝 |
+|----------|-----------|-----|---------|
+| 도입 | L1~L2 (기억, 이해) | L4~L5 (분석, 평가) | L2~L3 (이해, 적용) |
+| 전개 초반 | L2~L3 | L3~L4 | L3~L4 |
+| 전개 후반 | L3~L4 | L5~L6 | L4~L5 |
+| 정리 | L2~L3 | L5~L6 | L5 |
+
+**형성평가 × 교수 모델 추천 도구**:
+
+| 형성평가 유형 | 직접교수법 | PBL | 플립러닝 |
+|-------------|-----------|-----|---------|
+| 섹션별 체크 | 퀴즈, 화이트보드 응답 | 진행 발표, 동료 피드백 | 개념 적용 미니 과제 |
+| Exit Ticket | 3-2-1 반성, 1분 작문 | 성찰 일지 | "사전학습과 연결된 새 발견" |
+| 실습 통합 | 수행 체크리스트, 코드 리뷰 | 루브릭 기반 산출물 평가 | 실습 결과 동료 검토 |
 
 **데이터 흐름**:
 ```
 구성안 로드 → 01_input_data.json → 02_explore_research.md → 03_brainstorm_result.md
-→ 04_deep_research.md → 05_arch_architecture.md → 06_write_lecture_script.md → 07_review_quality.md
+→ 04_deep_research.md → 05_arch_lesson_plan.md → 06_write_lecture_script.md → 07_review_quality.md
 ```
 
 **산출물**: `lectures/YYYY-MM-DD_{강의명}/02_script/06_write_lecture_script.md`
@@ -344,7 +396,15 @@ lectures/
     │   ├── 06_write_lecture_outline.md           # Phase 6: 최종 구성안 ★
     │   └── 07_review_quality.md                 # Phase 7: 품질 검토
     ├── 02_script/                            # /lecture-script 산출물
-    │   └── 06_write_lecture_script.md           # 최종 교안 ★
+    │   ├── 01_input_data.json                   # Phase 1: 구성안 로드 + 교안 설정
+    │   ├── 02_explore_plan.md                   # Phase 2: 탐색적 리서치 계획
+    │   ├── 02_explore_research.md               # Phase 2: 리서치 결과
+    │   ├── 03_brainstorm_result.md              # Phase 3: 브레인스토밍 결과
+    │   ├── 04_deep_research.md                  # Phase 4: 심화 리서치
+    │   ├── 05_arch_lesson_plan.md               # Phase 5: 차시별 레슨 플랜 구조 설계
+    │   ├── 06_write_script_draft.md             # Phase 6: 교안 초안 (중간)
+    │   ├── 06_write_lecture_script.md           # Phase 6: 최종 교안 ★
+    │   └── 07_review_quality.md                 # Phase 7: 품질 검토
     ├── 03_slide_plan/                        # /slide-planning 산출물
     │   └── 06_write_slide_plan.md               # 최종 슬라이드 기획 ★
     └── 04_slides/                            # /slide-generation 산출물
@@ -417,8 +477,10 @@ lectures/
 | **Backward Design** | 구성안, 교안 | 학습결과 → 평가 → 학습경험 역순 설계 |
 | **GAIDE** | 구성안 | Setup → 초안 → 매크로 정제 → 마이크로 정제 → 통합 |
 | **BOPPPS** | 구성안 차시 설계 | Bridge-Outcomes-Pre-Participatory-Post-Summary (참여학습 50% 보호) |
-| **Gagne 9사태** | 교안 | 주의획득 → 목표고지 → ... → 파지와 전이 촉진 |
-| **Hunter 8단계** | 교안 | 선행조직자 → 목표 → 정보제공 → 시범 → 이해확인 → 연습 → 정리 |
+| **Gagne 9사태** | 교안 | 주의획득 → 목표고지 → ... → 파지와 전이 촉진 (전체 9/핵심 5/라벨 없음 선택 가능) |
+| **Hunter 6단계** | 교안 (직접교수법) | 복습 → 목표제시 → 제시 → 시범 → 안내연습 → 독립연습 |
+| **PBL 6단계** | 교안 (PBL) | 문제 시나리오 → 문제 정의 → 탐구 → 해결책 개발 → 발표 → 성찰 |
+| **Before/During/After** | 교안 (플립러닝) | 사전학습 확인 → 개념 명확화 → 그룹 활동 → 심화 적용 → 사후 과제 |
 | **QM Rubric** | 품질 검토 | 8개 일반 기준, 목표-활동-평가 정렬 |
 | **2-Pass Research** | 구성안, 교안 | 탐색적 리서치(문제 공간) → 브레인스토밍 → 심화 리서치(아이디어 검증) |
 | **Assertion-Evidence** | 슬라이드 | 주장 제목 + 시각 증거 (불릿포인트 대체) |

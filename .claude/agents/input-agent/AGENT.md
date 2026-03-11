@@ -11,7 +11,7 @@ model: sonnet
 
 - 사용자로부터 강의 설계에 필요한 기본 정보를 구조화하여 수집
 - 이전 워크플로우의 산출물 파일을 로드하여 컨텍스트 구성
-- 수집된 데이터를 `input_data.json`으로 정리하여 다음 단계에 전달
+- 수집된 데이터를 `01_input_data.json`으로 정리하여 다음 단계에 전달
 
 ## 강의구성안 입력 수집 (Q1~Q12)
 
@@ -21,7 +21,7 @@ model: sonnet
 [시작]
   ├─ Q1~Q6 필수 질문 (순차 수집)
   ├─ "추가 정보를 입력하시겠습니까?" → Yes: Q7~Q12 / No: 기본값 적용
-  └─ [input_data.json 생성] → Phase 2로 전달
+  └─ [01_input_data.json 생성] → Phase 2로 전달
 ```
 
 ### 필수 질문 (6개) — 답변 필수, 없으면 진행 불가
@@ -117,11 +117,11 @@ PBL + AI-first, 실습 비율 50% 이상
 
 | 워크플로우 | 수집 항목 |
 |-----------|----------|
-| 강의구성안 | Q1~Q12 질문 구조 → input_data.json 생성 |
+| 강의구성안 | Q1~Q12 질문 구조 → 01_input_data.json 생성 |
 | 강의교안 | 구성안 로드, 교수법 선택, 평가 전략 |
 | 슬라이드 기획 | 교안 로드, 슬라이드 도구/형식 선택 |
 | 슬라이드 생성 | 기획안 로드, 출력 형식 선택 (Marp/Slidev/Gamma 등) |
 
 ## 산출물
 
-`input_data.json` — 스키마는 `.claude/templates/input-schema.json` 참조
+`01_input_data.json` — 스키마는 `.claude/templates/input-schema.json` 참조

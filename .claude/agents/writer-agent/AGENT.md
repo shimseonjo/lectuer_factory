@@ -960,3 +960,136 @@ AWN 판정 시 사용자가 "반영" 선택한 경우의 경량 수정:
 - P3(Suggestion) 항목만 반영
 - 3중 검증 재실행 **불필요** (AWN 수준은 이미 "진행 가능")
 - 재검토(Phase 7 재실행) **불필요**
+
+---
+
+### 강의교안 차시별 작성 (Phase 6a) — session_write 모드
+
+Phase 5에서 확정된 레슨 플랜을 기반으로, 1차시 단위로 교안 스크립트를 순차 작성한다.
+
+#### 입력
+
+| 파일 | 용도 |
+|------|------|
+| `05_arch_lesson_plan.md` 해당 차시 섹션 | 분 단위 레슨 플랜 (도입-전개-정리, Gagné, GRR, SLO) |
+| `01_input_data.json` | script_settings, inherited |
+| `03_brainstorm_result.md` 관련 섹션 | 발문, 활동, 사례, 형성평가 후보 |
+| `04_deep_research.md` 관련 섹션 | 교수법 사례, 발문 뱅크, 보충 자료 |
+| `_running_summary.md` | 이전 차시 누적 요약 (일관성 유지) |
+| `06_sessions/06_session_{N-1}.md` | 직전 차시 (전환 멘트 연결용, 첫 차시는 없음) |
+
+#### 산출물
+
+`06_sessions/06_session_{NNN}.md` — script-template.md의 차시 섹션 형식 준수.
+
+#### 작성 절차
+
+1. **컨텍스트 로드**: lesson_plan에서 해당 차시의 Phase, 교수 모델, SLO, 시간배분, Gagné 배치, GRR 중심을 추출
+2. **차시 헤더 작성**: 차시 메타테이블 (Phase, 교수 모델, SLO, GRR, 시간배분, 필요 자료)
+3. **도입 작성**: 교수 모델별 도입 구조, Gagné 사태 배치, 발문(도입 1개), 전환 멘트
+4. **전개 작성**: GRR 단계별 활동, Gagné 사태, 발문(전개 2개), 형성평가, 활동 상세
+5. **정리 작성**: 요약, 정리 발문(1개), 차시 산출물, 다음 차시 전환 멘트
+6. **발표자 노트**: 타이밍 팁, 흔한 오개념, 대안 활동, 자료 체크
+7. **Running Summary 갱신**: `_running_summary.md`에 해당 차시 요약 append
+   - 형식: `### 차시 {N}: {제목}\n- 핵심 개념: {2~3개}\n- 전환: {마지막 멘트}\n- 산출물: {결과물}`
+
+#### Running Summary 규칙
+
+- 각 차시 작성 완료 시 핵심 내용 2~3문장을 `_running_summary.md`에 append
+- 항목: (1) 다룬 핵심 개념, (2) 마지막 전환 멘트/예고, (3) 학습자 산출물
+- 이전 차시 전체를 다시 읽지 않고 Running Summary만으로 맥락 유지
+- 조건부 분기(script_detail_level, gagne_display, questioning_design, formative_assessment, teaching_model)는 기존 Phase 6 규칙을 동일하게 적용
+
+#### session_revise 모드 (재작성)
+
+Phase 6b 경량 검토에서 FAIL 판정 시 호출.
+- 입력: `06_session_{NNN}.md` + review_feedback (시간합산/SLO/Bloom's 중 FAIL 항목)
+- 작업: FAIL 항목만 수정, 나머지 섹션 변경 금지
+- 산출물: `06_session_{NNN}.md` 덮어쓰기
+
+---
+
+### 강의교안 모듈 통합 (Phase 6c) — module_integrate 모드
+
+해당 모듈(4시간 = 반일)의 모든 차시 교안을 하나의 모듈 파일로 통합한다.
+
+#### 입력
+
+| 파일 | 용도 |
+|------|------|
+| `06_sessions/06_session_{N}.md` × 4개 | 해당 모듈의 차시 교안들 |
+| `05_arch_lesson_plan.md` 해당 Day/모듈 섹션 | 모듈 구조 참조 |
+| `_running_summary.md` | 누적 요약 |
+| `06_modules/06_module_{K-1}.md` | 이전 모듈 (모듈 간 연결용, 첫 모듈은 없음) |
+
+#### 산출물
+
+`06_modules/06_module_{NN}.md`
+
+#### 통합 절차
+
+1. **병합**: 차시 파일들을 순서대로 단일 파일로 병합
+   - 모듈 헤더 추가: `## 모듈 {NN}: Day {D} {오전/오후} ({Phase})`
+   - 차시 간 구분선 유지
+2. **일관성 패치**:
+   - 용어 통일 (동일 개념 동일 용어 확인)
+   - 전환 멘트 매끄럽게 다듬기 (차시 간 연결)
+   - tone_examples 배분 확인 (모듈 내 균등)
+   - 메타포/비유 중복 제거
+3. **Synthesizer 삽입**: 모듈 말미에 종합 요약 섹션 추가
+   ```markdown
+   ### 모듈 {NN} 핵심 종합
+
+   이 {N}시간 동안 학습한 핵심:
+   1. {핵심 개념 1} — {한 문장 요약}
+   2. {핵심 개념 2} — {한 문장 요약}
+   3. {핵심 개념 3} — {한 문장 요약}
+
+   **다음 모듈 예고**: {다음 모듈 주제와 연결}
+   ```
+4. **Running Summary 리셋**: `_running_summary.md`를 모듈 수준 요약으로 갱신
+   - 이전 모듈들: 각 1~2문장 요약으로 압축
+   - 현재 모듈: 상세 유지
+
+#### module_revise 모드 (수정)
+
+Phase 6d 모듈 검토에서 FAIL 판정 시 호출.
+- 입력: `06_module_{NN}.md` + module_review_feedback (연결성/톤/난이도/SLO 중 FAIL 항목)
+- 작업: FAIL 항목만 수정
+- 산출물: `06_module_{NN}.md` 덮어쓰기
+
+---
+
+### 강의교안 최종 통합 (Phase 7a) — final_integrate 모드
+
+모든 모듈을 최종 강의교안으로 통합하고, 코스 레벨 섹션을 추가한다.
+
+#### 입력
+
+| 파일 | 용도 |
+|------|------|
+| `06_modules/06_module_*.md` | 모든 모듈 통합본 |
+| `01_input_data.json` | 메타데이터, script_settings |
+| `05_arch_lesson_plan.md` | 전체 구조, 정렬 맵 |
+| `{outline_dir}/06_write_lecture_outline.md` | 코스 개요, 학습 목표, 시간표 |
+
+#### 산출물
+
+`06_write_lecture_script.md` — script-template.md의 최종 교안 형식.
+
+#### 통합 절차
+
+1. **코스 레벨 섹션 작성**:
+   - 메타데이터 테이블 (작성일, 주제, 대상, 형태, 시간, 교수 모델, 상세도 등)
+   - §1 강의 개요 (구성안 상속, 1~2문단)
+   - §2 학습 목표 테이블 (Bloom's, 우선순위)
+   - §시간표 (일별×교시별 그리드 — input_data.json의 schedule 기반)
+2. **모듈 병합**: 모든 모듈을 `§3 차시별 교안` 섹션으로 순서대로 병합
+   - Day 헤더 삽입 (모듈 2개 = 1 Day)
+   - 모듈 간 구분선
+3. **§4 교수학적 정렬 매트릭스**: 전체 SLO × 차시 × 활동 × 발문 × 형성평가 매트릭스 생성
+4. **부록 작성**:
+   - A. 설계 결정 로그
+   - B. 검증 결과 요약 (차시별/모듈별 검토 통과 기록)
+   - C. 발문 인덱스 (questioning_design.include 시)
+5. **최종 정제**: 전체 톤 일관성 확인, 템플릿 형식 정합, 불필요한 중복 제거

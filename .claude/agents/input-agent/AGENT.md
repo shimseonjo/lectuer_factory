@@ -341,13 +341,138 @@ PBL + AI-first, 실습 비율 50% 이상
 
 **JSON 스키마**: 설계 문서 `.claude/temp/design_script_phase1.md` B섹션 참조
 
+## 슬라이드 기획 입력 수집
+
+### 개요
+
+슬라이드 기획은 강의교안의 후속 워크플로우이므로, 교안 산출물(`02_script/`)에서 대부분의 정보를 자동 로드한다. 2계층 분리 로드로 모듈 교안을 주 입력으로 사용하고, 자동 추론 5개 + 사용자 질문 2개로 설정을 수집한다.
+
+- **2계층 분리 로드**: Layer 1(통합본 상단 → 메타데이터) + Layer 2(모듈 교안 → 차시별 상세) + Layer 3(보조 JSON)
+- **자동 추론 5개**: PQ1(범위동기화), PQ4(밀도→A-E), PQ5(톤매칭), PQ6(노트=true), PQ7(코드테마)
+- **사용자 질문 2개**: PQ2(슬라이드 도구), PQ3(정보 밀도)
+- **AskUserQuestion**: 최소 2회 ~ 최대 3회 (폴더선택 별도)
+- **설계 문서**: `.claude/temp/design_slide_plan_phase1.md` 참조
+
+### Step 0: 강의 폴더 탐색 및 선택
+
+1. `lectures/` 폴더를 Glob으로 스캔하여 `YYYY-MM-DD_*` 패턴의 강의 폴더 목록을 수집
+2. 날짜 기준 최신순 정렬
+3. AskUserQuestion으로 강의 선택:
+   - 폴더 없음/0개 → 오류 메시지 출력 후 종료
+   - 폴더 1개: 해당 폴더 + "기타 직접 입력" = 2개 선택지
+   - 폴더 2개: 2개 + "기타 직접 입력" = 3개 선택지
+   - 폴더 3개+: 최신 3개 + "기타 직접 입력" = 4개 선택지
+4. 선택된 폴더의 `02_script/06_write_lecture_script.md` 존재 확인 (없으면 오류 후 종료)
+5. `02_script/06_modules/` 디렉토리 존재 확인 (없으면 오류 후 종료)
+
+### Step 1: 2계층 교안 자동 파싱 + 자동 추론 (사용자 개입 없음)
+
+**Layer 1: 코스 레벨 메타데이터** — `06_write_lecture_script.md` 상단에서 추출
+
+파싱 항목: 강의 주제(`topic`), 대상 학습자(`target_learner`), 강의 형태(`format`), 시간 구성(`schedule`), 교수 모델(`teaching_model`), 톤/스타일(`tone`), SLO 목록(`learning_goals`), 시간표(`timetable`), 정렬 매트릭스(`alignment_matrix`)
+
+→ 통합본의 **처음 ~200줄**(메타데이터~시간표)과 **§4 정렬 매트릭스**만 파싱. 차시별 스크립트 본문은 읽지 않는다.
+
+**Layer 2: 모듈별 상세 콘텐츠** — `06_modules/06_module_{NN}.md` 전체
+
+파싱 항목: 모듈 헤더(일차, 시간대, 차시 범위, 매크로 Phase, 모듈 SLO), 차시별 교안(도입/전개/정리, 발문, 활동, 형성평가), 발표자 노트(타이밍, 오개념, 대안, 체크리스트), 모듈 핵심 종합(Synthesizer)
+
+→ 모듈 교안이 일관성 패치·Synthesizer 적용 완료된 최종 품질 버전이므로 주 입력으로 사용
+
+**Layer 3: 보조 JSON** — `input_data.json`에서 보완
+
+- `02_script/01_input_data.json` → `teaching_model`, `script_settings` (target_scope 등)
+- `01_outline/01_input_data.json` → `tone_examples`, `lab_environment`, `keywords`
+
+**파싱 우선순위** (동일 항목이 여러 소스에 있을 때):
+1. `06_modules/06_module_{NN}.md` (모듈별 상세)
+2. `06_write_lecture_script.md` 상단 (코스 레벨 메타데이터)
+3. `02_script/01_input_data.json` (교안 설정 보완)
+4. `01_outline/01_input_data.json` (원본 보완)
+
+**콘텐츠 유형 자동 탐지** → `derived` 필드에 기록:
+- `has_code_content`: 코드 워크스루, 라이브 코딩, 코드 리뷰 활동 존재 여부
+- `has_activity_content`: 실습, 그룹활동, 프로젝트 활동 존재 여부
+- `has_quiz_content`: 형성평가, 퀴즈 활동 존재 여부
+
+**자동 추론 5개 항목** (이전 단계 산출물에서 결정적 파생):
+
+| # | 카테고리 | 추론 소스 | 추론 로직 |
+|---|---------|----------|----------|
+| PQ1 | 슬라이드 작성 범위 | `script_settings.target_scope` | 교안 작성 범위와 동기화 (교안이 없는 차시는 기획 불가) |
+| PQ5 | 디자인 톤 | `inherited.tone` 텍스트 | 키워드 매칭: 비유/친근→educational, 전문/기업→professional, 간결/미니멀→minimal, fallback→format.type 기반 |
+| PQ6 | 발표자 노트 | 교안 워크플로우 특성 | 항상 `include = true` |
+| PQ7 | 코드 테마 | `derived.has_code_content` | 코드 존재 시 `dark` 자동 설정, 없으면 `applicable = false` |
+| PQ4 | Assertion-Evidence | PQ3(밀도) 결과 | Step 2에서 PQ3 확정 후 파생 (educational→full, high_density→partial, presentation→full) |
+
+**도구 자동 추천 로직** 실행:
+- 코드 중심 교육(`has_code_content` + `lab_environment`) → Slidev 추천
+- 비개발자 대상 → Gamma 추천
+- 범용 교육 → Marp 추천
+
+### Step 2: PQ2 + PQ3 수집
+
+AskUserQuestion 1회 (2개 묶음):
+
+```
+PQ2: "슬라이드 생성에 사용할 도구를 선택하세요."
+1. {자동추천 도구} (추천) — {추천 근거}
+2. Marp — 마크다운 기반, AI 생성 용이, Git 친화적
+3. Slidev — Vue 기반, 코드 데모·줄별 하이라이트, 개발 교육 특화
+4. Gamma — AI 기반, 시각적 완성도, 비개발자 접근성
+(자동추천 도구가 1번에 위치, 나머지는 중복 없이 배치)
+
+PQ3: "슬라이드 정보 밀도 프리셋을 선택하세요."
+1. 교육용 표준 (추천) — 2-3분/슬라이드, 유형별 적응적 밀도
+2. 고밀도 참조형 — 3-5분/슬라이드, 15-21줄, 핸드아웃 겸용
+3. 프레젠테이션형 — 1-2분/슬라이드, 5-7줄, 발표 최적화
+```
+
+PQ3 확정 후 PQ4 자동 파생:
+- `educational_standard` → `assertion_evidence.level = "full"`
+- `high_density` → `assertion_evidence.level = "partial"`
+- `presentation` → `assertion_evidence.level = "full"`
+
+### Step 3: 자동 추론 확인 게이팅
+
+자동 추론된 설정 요약을 보여주고 AskUserQuestion:
+
+```
+"자동 설정을 확인하세요. 조정이 필요하면 선택하세요."
+1. 자동 설정 그대로 진행 (추천)
+2. 세부 설정 조정
+```
+
+- "자동 설정 그대로" → PQ1·PQ4·PQ5·PQ6·PQ7 자동값 확정 후 Step 4로
+- "세부 설정 조정" → AskUserQuestion 1회 추가 (PQ4+PQ5+PQ7 묶음, 최대 3개):
+  - PQ4: Assertion-Evidence — {자동값}(추천) / 전면 적용 / 부분 적용 / 전통 불릿
+  - PQ5: 디자인 톤 — {자동값}(추천) / 교육적/친근 / 전문적/기업 / 미니멀
+  - PQ7: 코드 테마 — dark(추천) / light / monokai (`has_code_content` 시에만 표시)
+
+### Step 4: JSON 생성 및 완료
+
+1. `03_slide_plan/` 폴더 생성 (없으면)
+2. 파싱된 `inherited` + `slide_settings` + `derived` + `source` + `metadata` 통합
+3. `03_slide_plan/01_input_data.json` 저장
+4. Phase 1 완료 검증 (설계 문서 §I 기준):
+   - `01_input_data.json` 파일 존재
+   - `slide_settings` 필수 필드 존재 (target_scope, tool, density_profile, assertion_evidence, design_tone, speaker_notes)
+   - `source.script_file` 경로 파일 실제 존재
+   - `inherited.modules` 배열 비어있지 않음, 각 모듈에 `sessions` 존재
+   - `derived.total_sessions > 0`
+   - `target_scope.type = "day"`이면 `session_ids` 비어있지 않음
+   - `tool.selected`가 유효 enum (`marp | slidev | gamma | revealjs`)
+5. 수집된 설정 요약을 사용자에게 출력
+
+**JSON 스키마**: 설계 문서 `.claude/temp/design_slide_plan_phase1.md` B섹션 참조
+
 ## 워크플로우별 동작
 
 | 워크플로우 | 수집 항목 |
 |-----------|----------|
 | 강의구성안 | Q1~Q14 질문 구조 → 01_input_data.json 생성 |
 | 강의교안 | 구성안 자동 로드 + SQ1~SQ5 질문 → 01_input_data.json 생성 |
-| 슬라이드 기획 | 교안 로드, 슬라이드 도구/형식 선택 |
+| 슬라이드 기획 | 교안 2계층 로드(모듈 교안 주 입력), 자동 추론 5개(PQ1·PQ4·PQ5·PQ6·PQ7) + 사용자 질문 2개(PQ2 도구·PQ3 밀도) → 01_input_data.json 생성 |
 | 슬라이드 생성 | 기획안 로드, 출력 형식 선택 (Marp/Slidev/Gamma 등) |
 
 ## 산출물
@@ -355,3 +480,4 @@ PBL + AI-first, 실습 비율 50% 이상
 `01_input_data.json` — 워크플로우별 스키마가 다름
 - 강의구성안: `.claude/templates/input-schema.json` 참조
 - 강의교안: `.claude/temp/design_script_phase1.md` B섹션 참조
+- 슬라이드 기획: `.claude/temp/design_slide_plan_phase1.md` B섹션 참조

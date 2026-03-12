@@ -641,18 +641,37 @@ lectures/
 └── YYYY-MM-DD_{강의명}/                      # 날짜 + 강의명 (Phase 1에서 자동 생성)
     ├── 01_outline/                           # /lecture-outline 산출물
     │   ├── 01_input_data.json                   # Phase 1: 사용자 입력 (Q1~Q14)
-    │   ├── 02_explore_research.md               # Phase 2: 탐색적 리서치 최종 ★
+    │   ├── 02_explore_plan.md                   # Phase 2: 리서치 계획
+    │   ├── 02_explore_local.md                  # Phase 2: 로컬 참고자료 분석
+    │   ├── 02_explore_nblm.md                   # Phase 2: NotebookLM 쿼리 결과
+    │   ├── 02_explore_web.md                    # Phase 2: 인터넷 리서치 결과
+    │   ├── 02_explore_research.md               # Phase 2: 4자료원 통합 최종 ★
+    │   ├── 03_brainstorm_divergent.md           # Phase 3: 발산적 탐색 (중간)
+    │   ├── 03_brainstorm_convergent.md          # Phase 3: 수렴 및 매핑 (중간)
+    │   ├── 03_brainstorm_review.md              # Phase 3: 다관점 검증 (중간)
     │   ├── 03_brainstorm_result.md              # Phase 3: 브레인스토밍 최종 ★
+    │   ├── 04_deep_plan.md                      # Phase 4: 심화 리서치 계획 (Scope+Plan)
+    │   ├── 04_deep_local_nblm.md                # Phase 4: 로컬/NBLM 심화 재분석
+    │   ├── 04_deep_web.md                       # Phase 4: 웹 심화 수집 (Retrieve)
     │   ├── 04_deep_research.md                  # Phase 4: 심화 리서치 최종 ★
     │   ├── 05_arch_architecture.md              # Phase 5: 아키텍처 설계
+    │   ├── 06_write_outline_draft.md            # Phase 6: 구성안 초안 (중간)
     │   ├── 06_write_lecture_outline.md           # Phase 6: 최종 구성안 ★
     │   └── 07_review_quality.md                 # Phase 7: 품질 검토
     ├── 02_script/                            # /lecture-script 산출물
     │   ├── 01_input_data.json                   # Phase 1: 구성안 로드 + 교안 설정
     │   ├── 02_explore_plan.md                   # Phase 2: 탐색적 리서치 계획
-    │   ├── 02_explore_research.md               # Phase 2: 리서치 결과
+    │   ├── 02_explore_local.md                  # Phase 2: 로컬 참고자료 분석
+    │   ├── 02_explore_nblm.md                   # Phase 2: NotebookLM 쿼리 결과
+    │   ├── 02_explore_web.md                    # Phase 2: 인터넷 리서치 결과
+    │   ├── 02_explore_research.md               # Phase 2: 6자료원 통합 최종 ★
+    │   ├── 03_brainstorm_divergent.md           # Phase 3: 발산적 탐색 (Step 1)
+    │   ├── 03_brainstorm_convergent.md          # Phase 3: 수렴 및 매핑 (Step 2)
+    │   ├── 03_brainstorm_review.md              # Phase 3: 다관점 검증 (Step 3)
     │   ├── 03_brainstorm_result.md              # Phase 3: 브레인스토밍 최종 ★
     │   ├── 04_deep_plan.md                      # Phase 4: 심화 리서치 계획
+    │   ├── 04_deep_local_nblm.md                # Phase 4: 로컬/NBLM 심화 재분석
+    │   ├── 04_deep_web.md                       # Phase 4: 웹 심화 수집 결과
     │   ├── 04_deep_research.md                  # Phase 4: 심화 리서치 최종 ★
     │   ├── 05_arch_lesson_plan.md               # Phase 5: 차시별 레슨 플랜 구조 설계
     │   ├── _running_summary.md                  # Phase 6: 누적 요약 (차시·모듈 작성 시 갱신)
@@ -672,27 +691,7 @@ lectures/
         └── 06_write_slides.md                   # 최종 슬라이드 ★
 ```
 
-**중간 산출물 명명 예시** (01_outline/ 내부):
-
-```
-03_brainstorm_divergent.md       # Phase 3 중간: 발산적 탐색
-03_brainstorm_convergent.md      # Phase 3 중간: 수렴 및 매핑
-03_brainstorm_review.md          # Phase 3 중간: 다관점 검증
-06_write_outline_draft.md        # Phase 6 중간: 구성안 초안
-```
-
-**중간 산출물 명명 예시** (02_script/ 내부):
-
-```
-03_brainstorm_divergent.md       # Phase 3 중간: 발산적 탐색 (Step 1)
-03_brainstorm_convergent.md      # Phase 3 중간: 수렴 및 매핑 (Step 2)
-03_brainstorm_review.md          # Phase 3 중간: 다관점 검증 (Step 3)
-04_deep_local_nblm.md            # Phase 4 중간: 로컬/NBLM 심화 재분석 (Step 1)
-04_deep_web.md                   # Phase 4 중간: 웹 심화 수집 결과 (Step 1)
-06_sessions/06_session_NNN.md    # Phase 6a: 차시별 교안 (NNN=001,002,...)
-06_modules/06_module_NN.md       # Phase 6c: 4시간 모듈 통합 (NN=01,02,...)
-06_modules/06_module_NN_review.md # Phase 6d: 모듈 검토 결과
-```
+**참고**: 위 폴더 구조 트리에 모든 중간 산출물이 포함되어 있습니다. ★ 표시는 각 Phase의 최종 산출물(후속 Phase의 입력으로 사용)을 의미합니다.
 
 ### 공통 규칙
 

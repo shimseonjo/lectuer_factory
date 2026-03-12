@@ -2,7 +2,7 @@
 name: lecture-script
 description: 강의교안 생성 - 차시별 반복 파이프라인 (입력수집 → 탐색리서치 → 브레인스토밍 → 심화리서치 → 구조설계 → [차시작성+검토 → 모듈통합+검토] → 최종통합+검토)
 context: fork
-allowed-tools: Agent, Read, Write, Glob, Grep, WebSearch, WebFetch, AskUserQuestion
+allowed-tools: Agent, Read, Write, Glob, Grep, WebSearch, WebFetch, AskUserQuestion, mcp__Context7__resolve-library-id, mcp__Context7__get-library-docs
 ---
 
 # 강의교안 생성 워크플로우

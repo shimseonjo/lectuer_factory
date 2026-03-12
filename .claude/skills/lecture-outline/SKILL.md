@@ -2,7 +2,7 @@
 name: lecture-outline
 description: 강의구성안 생성 - 7단계 파이프라인 (입력수집 → 탐색리서치 → 브레인스토밍 → 심화리서치 → 아키텍처 → 작성 → 검토)
 context: fork
-allowed-tools: Agent, Read, Write, Glob, Grep, WebSearch, WebFetch, AskUserQuestion
+allowed-tools: Agent, Read, Write, Glob, Grep, WebSearch, WebFetch, AskUserQuestion, mcp__Context7__resolve-library-id, mcp__Context7__get-library-docs
 ---
 
 # 강의구성안 생성 워크플로우

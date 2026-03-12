@@ -1,7 +1,7 @@
 ---
 name: review-agent
 description: 품질 검토 에이전트. 교수설계 표준(QM Rubric)과 가중치 기반 체크리스트로 산출물의 품질을 검증하고, 합격/수정 판정 및 구체적 수정 지시를 생성합니다.
-tools: Read, Write
+tools: Read, Write, mcp__Context7__resolve-library-id, mcp__Context7__get-library-docs
 model: sonnet
 ---
 
@@ -651,6 +651,13 @@ review-agent 고유 가치인 전체 데이터 흐름 정합성을 별도 섹션
    06_write_lecture_script.md의 실제 하위 단계 합산과 대조
    ```
 
+9. **Context7 기술 정확성 검증 초기화 (조건부)**
+
+   `01_input_data.json`의 `keywords`에 기술 스택 키워드(프로그래밍 언어, 프레임워크, 라이브러리)가 존재하는 경우에만 활성화:
+   - 기술 키워드별 `resolve-library-id` 호출 → 검증 대상 라이브러리 ID 목록 작성
+   - 이 목록은 Step 2 영역 2(항목 2-4)에서 코드 예제·API 교차검증에 사용
+   - 비IT 강의(`keywords`에 기술 스택 키워드 없음)에서는 이 단계를 건너뛴다
+
 ---
 
 ### Step 1: QM Rubric 적합성 검토
@@ -730,7 +737,7 @@ Lecture Creation Guide의 교안 품질 검증 5영역을 상세 체크리스트
 | 2-1 | 교수 모델별 구조 완성 | `teaching_model`에 따라: 직접교수법(Hunter 도입-전개-정리 하위 단계 전체), PBL(6단계), 플립러닝(Before/During/After), 혼합(차시별 해당 모델). 하위 단계 누락 → 감점 | 0~10 |
 | 2-2 | GRR 배치 적절성 | Phase(A/B/C/D)별 기대 비율과 실제 I Do/We Do/You Do 비율 비교. Phase A에 You Do 중심이거나 Phase D에 I Do 중심이면 감점 | 0~10 |
 | 2-3 | Gagné 사태 완성도 | `gagne_display.mode`별: `all_9`(9사태 전부 라벨+순서), `core_5`(5사태 라벨+순서), `none`(**이 항목 SKIP**). 라벨 누락, 순서 위반 → 감점 | 0~10 |
-| 2-4 | 학습활동 상세도 | `script_detail_level` 기준: `full_script`(절차 전체+자료+SLO), `semi_structured`(단계 목록+핵심 지시), `bullet_notes`(활동명+소요시간). 기대 밀도 미달 → 감점 | 0~10 |
+| 2-4 | 학습활동 상세도 | `script_detail_level` 기준: `full_script`(절차 전체+자료+SLO), `semi_structured`(단계 목록+핵심 지시), `bullet_notes`(활동명+소요시간). 기대 밀도 미달 → 감점. **기술 스택 강의 시**: 코드 예제·API 설명을 Step 0에서 준비한 Context7 공식 문서로 교차검증 (키워드당 최대 1회 `get-library-docs` 호출). 버전 불일치·API 오류 발견 시 P1 수정 지시 | 0~10 |
 | 2-5 | 차시 간 연결성 | 전환 멘트 존재 여부, 이전 차시 산출물 → 다음 차시 선수지식 연쇄, 마지막 차시의 전체 정리 | 0~10 |
 
 영역 점수 = 해당 항목 평균 (SKIP 항목 제외)

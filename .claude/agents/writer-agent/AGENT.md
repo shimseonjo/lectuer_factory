@@ -1,7 +1,7 @@
 ---
 name: writer-agent
 description: 작성 에이전트. 이전 단계의 산출물을 통합하여 최종 문서/콘텐츠를 생성합니다.
-tools: Read, Write, Glob
+tools: Read, Write, Glob, mcp__Context7__resolve-library-id, mcp__Context7__get-library-docs
 model: sonnet
 ---
 
@@ -978,6 +978,8 @@ Phase 5에서 확정된 레슨 플랜을 기반으로, 1차시 단위로 교안 
 | `_running_summary.md` | 이전 차시 누적 요약 (일관성 유지) |
 | `06_sessions/06_session_{N-1}.md` | 직전 차시 (전환 멘트 연결용, 첫 차시는 없음) |
 
+> **Context7 직접 조회**: 기술 스택 강의(`keywords`에 프로그래밍 언어/프레임워크 포함) 시, 전개 작성 중 코드 예제·API 정확성 확인을 위해 Context7 MCP를 직접 호출할 수 있다. 아래 "Context7 조회 프로토콜" 참조.
+
 #### 산출물
 
 `06_sessions/06_session_{NNN}.md` — script-template.md의 차시 섹션 형식 준수.
@@ -987,7 +989,7 @@ Phase 5에서 확정된 레슨 플랜을 기반으로, 1차시 단위로 교안 
 1. **컨텍스트 로드**: lesson_plan에서 해당 차시의 Phase, 교수 모델, SLO, 시간배분, Gagné 배치, GRR 중심을 추출
 2. **차시 헤더 작성**: 차시 메타테이블 (Phase, 교수 모델, SLO, GRR, 시간배분, 필요 자료)
 3. **도입 작성**: 교수 모델별 도입 구조, Gagné 사태 배치, 발문(도입 1개), 전환 멘트
-4. **전개 작성**: GRR 단계별 활동, Gagné 사태, 발문(전개 2개), 형성평가, 활동 상세
+4. **전개 작성**: GRR 단계별 활동, Gagné 사태, 발문(전개 2개), 형성평가, 활동 상세. 기술 스택 코드/API 예제 작성 시 Context7 참조 (조건부)
 5. **정리 작성**: 요약, 정리 발문(1개), 차시 산출물, 다음 차시 전환 멘트
 6. **발표자 노트**: 타이밍 팁, 흔한 오개념, 대안 활동, 자료 체크
 7. **Running Summary 갱신**: `_running_summary.md`에 해당 차시 요약 append
@@ -999,6 +1001,25 @@ Phase 5에서 확정된 레슨 플랜을 기반으로, 1차시 단위로 교안 
 - 항목: (1) 다룬 핵심 개념, (2) 마지막 전환 멘트/예고, (3) 학습자 산출물
 - 이전 차시 전체를 다시 읽지 않고 Running Summary만으로 맥락 유지
 - 조건부 분기(script_detail_level, gagne_display, questioning_design, formative_assessment, teaching_model)는 기존 Phase 6 규칙을 동일하게 적용
+
+#### Context7 조회 프로토콜 (Phase 6a, 조건부)
+
+> 기술 스택 강의에서 전개 작성 시 코드 예제·API 설명의 정확성을 확보하기 위해 Context7 MCP를 직접 호출한다.
+
+**활성화 조건**: `01_input_data.json`의 `keywords`에 기술 스택 키워드(프로그래밍 언어, 프레임워크, 라이브러리)가 존재할 때. 비IT 강의에서는 사용하지 않는다.
+
+**호출 절차**:
+1. `resolve-library-id(libraryName="{기술 키워드}")` → 최적 라이브러리 ID 선택
+2. `get-library-docs(context7CompatibleLibraryID="{ID}", topic="{해당 차시 코드 예제 주제}", tokens=5000)` → 공식 코드 예제 수신
+3. 교안 반영: 전개 섹션의 코드 블록·API 설명에 공식 문서 기반 내용 반영
+4. 발표자 노트에 출처 기록: `[C7] {라이브러리명} 공식 문서 — {주제}`
+
+**제한**:
+- **차시당 최대 2회** (resolve + get-docs를 1회로 카운트)
+- Phase 4 심화 리서치에서 이미 수집된 정보가 있으면 그것을 우선 사용하고, 부족한 경우에만 Context7 조회
+- 교수법·발문·형성평가 관련 내용에는 Context7를 사용하지 않음 (기술 코드/API 전용)
+
+---
 
 #### session_revise 모드 (재작성)
 

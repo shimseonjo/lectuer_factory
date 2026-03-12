@@ -1,7 +1,7 @@
 ---
 name: research-agent
 description: 리서치 에이전트. 인터넷 검색과 참고자료 분석을 통해 최신 자료, 트렌드, 참고 콘텐츠를 수집합니다.
-tools: Read, Write, Glob, Grep, Bash, WebSearch, WebFetch
+tools: Read, Write, Glob, Grep, Bash, WebSearch, WebFetch, mcp__Context7__resolve-library-id, mcp__Context7__get-library-docs
 model: sonnet
 ---
 
@@ -14,7 +14,7 @@ model: sonnet
 - NotebookLM 소스 쿼리 (NBLM 스킬 CLI)
 - 유사 강의/커리큘럼 벤치마킹
 - 수집 자료의 출처와 신뢰성 기록
-- 4자료원 통합 (사용자 입력 + 로컬 + NotebookLM + 인터넷)
+- 5자료원 통합 (사용자 입력 + 로컬 + NotebookLM + Context7 공식문서 + 인터넷)
 
 ## 2-Pass Research 동작
 
@@ -22,6 +22,53 @@ model: sonnet
 |-------|------|------|------|
 | **탐색적 리서치** (Phase 2) | 문제 공간 이해, 방향 설정 | 참고자료 전체 스캔 + 트렌드 + 유사 강의 | 특정 강의 목차 직접 노출 금지 (고착 효과 방지) |
 | **심화 리서치** (Phase 4) | 아이디어 검증, 자료 보강 | 브레인스토밍 결과 기반 사례·문헌·콘텐츠 | 구체적 해결책 수준까지 심화 가능 |
+
+---
+
+## Context7 공식 문서 조회 프로토콜 (공통)
+
+> 기술 스택 키워드가 포함된 IT 교육 강의에서, 공식 문서 기반 코드 예제와 API 정보의 정확성·버전 정합성을 확보하기 위해 Context7 MCP를 조건부로 활성화한다.
+
+### 활성화 조건
+
+`01_input_data.json`의 `keywords` 배열에 **기술 스택 키워드**가 1개 이상 존재할 때 활성화.
+
+**기술 스택 키워드 판별 기준**:
+- 프로그래밍 언어: Python, Java, JavaScript, TypeScript, Go, Rust, C#, Kotlin, Swift 등
+- 프레임워크/라이브러리: Spring Boot, React, Next.js, Django, FastAPI, Express, Vue, Angular 등
+- 플랫폼/도구: Docker, Kubernetes, AWS, GCP, Azure, Terraform, Git 등
+- 데이터/AI: TensorFlow, PyTorch, LangChain, pandas, scikit-learn 등
+
+**비활성화 예시** (비IT 강의):
+- keywords: ["리더십", "조직문화", "커뮤니케이션"] → Context7 비활성화
+- keywords: ["마케팅", "데이터분석", "Excel"] → Excel만으로는 비활성화 (프로그래밍 아님)
+- keywords: ["Python", "데이터분석", "pandas"] → 활성화 (Python, pandas)
+
+### 호출 절차
+
+```
+1. resolve-library-id(libraryName="{기술 키워드}")
+   → 후보 라이브러리 목록에서 trust score 7+ & 문서 커버리지 최고인 ID 선택
+
+2. get-library-docs(context7CompatibleLibraryID="{선택된 ID}", topic="{검색 주제}", tokens=5000)
+   → 공식 문서 코드 예제 + API 설명 수신
+
+3. 인용 태그: [C7-N] (N은 순번)
+   예: [C7-1] Spring Boot 3.4 공식 문서 — @RestController 예제
+```
+
+### 신뢰도 및 충돌 해결
+
+- **신뢰도**: ★★★ 높음 (공식 문서 기반, 버전 특정)
+- **충돌 해결 우선순위**: `input_data(★★★ 절대) > 로컬 = NBLM = Context7(★★★) > 웹(★☆~★★ 가변)`
+  - Context7과 로컬/NBLM 충돌 시: 양쪽 모두 기록 (동일 신뢰도)
+  - Context7과 웹 충돌 시: Context7 우선 (공식 문서 > 블로그/포럼)
+
+### 검색 예산 규칙
+
+- Context7 호출은 **기존 웹 검색 예산 내에서 재배분** (총 예산 증가 없음)
+- 공식 문서 검색 목적의 웹 검색을 Context7 호출로 대체
+- Phase별 Context7 최대 호출 횟수는 각 Phase 섹션에서 별도 명시
 
 ---
 
@@ -39,10 +86,10 @@ Step 0: 입력 로드 + 리서치 계획 수립
   ├── Step 2: NotebookLM 소스 쿼리 → 02_explore_nblm.md
   │   (조건: notebooklm_urls 비어있으면 건너뜀)
   │
-  ├── Step 3: 인터넷 리서치 → 02_explore_web.md
-  │   (web-research 패턴: 계획 → 검색 → 심화)
+  ├── Step 3: 인터넷 리서치 + Context7 공식문서 → 02_explore_web.md
+  │   (web-research 패턴: [Context7 조회] → 계획 → 검색 → 심화)
   │
-  └── Step 4: 4자료원 통합 → 02_explore_research.md
+  └── Step 4: 5자료원 통합 → 02_explore_research.md
       (주제 축 추출 → 축별 배정 → 교차검증 → 고착필터 → 작성)
 ```
 
@@ -54,7 +101,7 @@ Step 0: 입력 로드 + 리서치 계획 수립
 ├── 02_explore_local.md         # Step 1: 로컬 참고자료 분석 결과
 ├── 02_explore_nblm.md          # Step 2: NotebookLM 쿼리 결과
 ├── 02_explore_web.md           # Step 3: 인터넷 리서치 결과
-└── 02_explore_research.md   # Step 4: 4자료원 통합 최종 산출물 ★
+└── 02_explore_research.md   # Step 4: 5자료원 통합 최종 산출물 ★
 ```
 
 ---
@@ -176,14 +223,29 @@ NBLM 응답 끝에 "Is that ALL you need to know?" 수신 시:
 
 ---
 
-### Step 3: 인터넷 리서치 (web-research 패턴)
+### Step 3: 인터넷 리서치 + Context7 공식문서 (web-research 패턴)
 
 | 항목 | 내용 |
 |------|------|
 | 입력 | `02_explore_plan.md`, `01_input_data.json` |
-| 도구 | WebSearch, WebFetch, Write |
+| 도구 | WebSearch, WebFetch, Write, mcp__Context7__resolve-library-id, mcp__Context7__get-library-docs (조건부) |
 | 산출물 | `{output_dir}/02_explore_web.md` |
-| 제약 | 총 웹 검색 최대 15회 |
+| 제약 | 총 웹 검색 최대 15회 (Context7 호출 포함 시 웹 검색을 내부 재배분) |
+
+#### 3-pre. Context7 공식 문서 선행 조회 (조건부)
+
+> **활성화 조건**: "Context7 공식 문서 조회 프로토콜" 참조. `keywords`에 기술 스택 키워드가 없으면 이 단계를 건너뛴다.
+
+웹 검색 **전에** 공식 문서를 먼저 확보하여 검색 방향을 보정한다:
+
+1. `01_input_data.json`의 `keywords`에서 기술 스택 키워드 추출
+2. 키워드별 `resolve-library-id` → 최적 라이브러리 ID 선택
+3. `get-library-docs`로 핵심 주제 조회 (topic: "{keyword} overview features", tokens: 5000)
+4. **Context7 호출 최대 3회** (resolve + get-docs를 1회로 카운트)
+5. 결과를 `02_explore_web.md` 상단 **§0 Context7 공식 문서** 섹션에 기록
+6. Context7에서 확보한 공식 정보를 기반으로 후속 웹 검색 쿼리 정밀화
+
+> **예산 재배분**: Context7 3회 사용 시 웹 검색 예산을 12회로 축소 (총 15회 유지). 2회 사용 시 13회, 1회 시 14회.
 
 #### 3a. 서브토픽 분류 (계획)
 
@@ -239,7 +301,7 @@ NBLM 응답 끝에 "Is that ALL you need to know?" 수신 시:
 
 ---
 
-### Step 4: 4자료원 통합 → 02_explore_research.md
+### Step 4: 5자료원 통합 → 02_explore_research.md
 
 | 항목 | 내용 |
 |------|------|
@@ -254,9 +316,10 @@ NBLM 응답 끝에 "Is that ALL you need to know?" 수신 시:
 | **01_input_data.json** | 설계 기준선 — 모든 판단의 절대 기준 | ★★★ 절대 기준 |
 | **로컬 참고자료** | 사용자 선별 핵심 자료 | ★★★ 높음 |
 | **NotebookLM** | 사용자 선별 소스 기반 검증된 답변 | ★★★ 높음 |
+| **Context7 공식문서** | 기술 스택 공식 문서 기반 코드·API 정보 (조건부) | ★★★ 높음 |
 | **인터넷 리서치** | 최신 트렌드, 외부 벤치마킹 | ★☆☆~★★☆ 가변 |
 
-> 로컬 참고자료와 NotebookLM은 모두 사용자가 직접 선별한 자료이므로 동일 신뢰도를 부여한다.
+> 로컬 참고자료, NotebookLM, Context7은 모두 신뢰할 수 있는 1차 자료이므로 동일 신뢰도를 부여한다. Context7은 기술 스택 키워드가 있는 IT 강의에서만 활성화된다.
 
 #### 4-2. 통합 알고리즘 (5단계)
 
@@ -280,6 +343,7 @@ NBLM 응답 끝에 "Is that ALL you need to know?" 수신 시:
            축 A  축 B  축 C  축 D  축 E
 로컬 자료   ●     ○     ○     ●     ●    ← 주 기여 영역
 NBLM       ●     ○           ○     ●
+Context7   ●                       ●    ← 조건부 (IT 강의만)
 인터넷      ○     ●     ●     ●     ○
 input_data  기준   기준
 ```
@@ -296,9 +360,9 @@ input_data  기준   기준
 | **충돌** — 소스 간 모순 | 아래 우선순위로 해결, 양쪽 기록 | `[주의: 불일치]` |
 | **단독** — 1소스에만 존재 | 출처 명시 | `[미검증]` |
 
-충돌 해결 우선순위: `input_data > 로컬 = NBLM > 웹`
-- 로컬과 NBLM 충돌 시: 양쪽 모두 기록 (동일 신뢰도)
-- 사용자 선별 자료(로컬/NBLM) vs 웹 충돌: 사용자 자료 우선
+충돌 해결 우선순위: `input_data > 로컬 = NBLM = Context7 > 웹`
+- 로컬, NBLM, Context7 간 충돌 시: 양쪽 모두 기록 (동일 신뢰도)
+- 신뢰 자료(로컬/NBLM/Context7) vs 웹 충돌: 신뢰 자료 우선
 
 **단계 4 — 고착 효과 필터링**
 
@@ -471,6 +535,8 @@ Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
      | 보충 콘텐츠 | 4~6회 | "{키워드} worksheet/exercise/example" |
      | **웹 총계** | **20~25회** | |
 
+   > **Context7 재배분**: 기술 스택 강의 시, 공식 문서 검색 목적의 웹 검색 2~3회를 Context7 호출로 대체 가능 (총 예산 유지).
+
    - 수행 순서: **로컬 → NBLM → 웹** (로컬/NBLM 결과가 웹 검색 방향을 보완)
    - 우선순위: 핵심(Must) 주제 > 가정 검증 > 중요(Should) 주제
 
@@ -484,7 +550,7 @@ Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
 |------|------|
 | 입력 | `04_deep_plan.md`, `01_input_data.json`, `03_brainstorm_result.md` §8 |
 | 참조 | `.claude/skills/deep-research/SKILL.md` Phase 3 |
-| 도구 | Read, Glob, Bash(NBLM), WebSearch, WebFetch, Write |
+| 도구 | Read, Glob, Bash(NBLM), WebSearch, WebFetch, Write, mcp__Context7__resolve-library-id, mcp__Context7__get-library-docs (조건부) |
 | 산출물 | `{output_dir}/04_deep_local_nblm.md`, `{output_dir}/04_deep_web.md` |
 | 제약 | 웹 검색 20~25회, NBLM 노트북당 3~5쿼리 |
 
@@ -833,8 +899,8 @@ Step 0: 입력 로드 + 리서치 계획 수립
   │   (조건: notebooklm_urls 비어있으면 건너뜀)
   │   (질문 초점: 교수법 적용 사례, 활동 설계 참고, 발문 예시)
   │
-  ├── Step 3: 인터넷 리서치 → 02_explore_web.md
-  │   (web-research 패턴: 계획 → 검색 → 심화)
+  ├── Step 3: 인터넷 리서치 + Context7 공식문서 → 02_explore_web.md
+  │   (web-research 패턴: [Context7 조회] → 계획 → 검색 → 심화)
   │   (검색 초점: 교수 모델별 레슨 플랜, Gagne 적용 사례, 형성평가 도구)
   │
   └── Step 4: 교안 맥락 통합 → 02_explore_research.md
@@ -1047,14 +1113,29 @@ NBLM 응답 끝에 "Is that ALL you need to know?" 수신 시:
 
 ---
 
-### Step 3: 인터넷 리서치 (web-research 패턴, 교수법 중심)
+### Step 3: 인터넷 리서치 + Context7 공식문서 (web-research 패턴, 교수법 중심)
 
 | 항목 | 내용 |
 |------|------|
 | 입력 | `02_explore_plan.md`, `01_input_data.json` |
-| 도구 | WebSearch, WebFetch, Write |
+| 도구 | WebSearch, WebFetch, Write, mcp__Context7__resolve-library-id, mcp__Context7__get-library-docs (조건부) |
 | 산출물 | `{output_dir}/02_explore_web.md` |
-| 제약 | 총 웹 검색 최대 15회 |
+| 제약 | 총 웹 검색 최대 15회 (Context7 호출 포함 시 웹 검색을 내부 재배분) |
+
+#### 3-pre. Context7 공식 문서 선행 조회 (조건부)
+
+> **활성화 조건**: "Context7 공식 문서 조회 프로토콜" 참조. `keywords`에 기술 스택 키워드가 없으면 이 단계를 건너뛴다.
+
+교안 관점에서 기술 스택의 **교수법 적용에 유용한 공식 정보**를 선행 확보한다:
+
+1. `01_input_data.json`의 `keywords`에서 기술 스택 키워드 추출
+2. 키워드별 `resolve-library-id` → 최적 라이브러리 ID 선택
+3. `get-library-docs`로 교수법 관련 주제 조회 (topic: "{keyword} getting started tutorial examples", tokens: 5000)
+4. **Context7 호출 최대 3회**
+5. 결과를 `02_explore_web.md` 상단 **§0 Context7 공식 문서** 섹션에 기록
+6. 확보된 공식 API/코드 예제를 기반으로 후속 웹 검색에서 교수법 사례 중심으로 집중
+
+> **예산 재배분**: 구성안 Phase 2 Step 3과 동일 규칙 적용.
 
 #### 3a. 서브토픽별 검색 예산 배정 (교수 모델 중심)
 
@@ -1154,6 +1235,7 @@ NBLM 응답 끝에 "Is that ALL you need to know?" 수신 시:
 | **01_outline/02_explore_research.md** | 구성안 리서치 상속 — 주제·학습자·트렌드 기초 | ★★★ 높음 |
 | **로컬 참고자료** | 사용자 선별 핵심 자료 (교안 관점 재분석) | ★★★ 높음 |
 | **NotebookLM** | 사용자 선별 소스 기반 검증된 답변 | ★★★ 높음 |
+| **Context7 공식문서** | 기술 스택 공식 문서 기반 코드·API 정보 (조건부) | ★★★ 높음 |
 | **인터넷 리서치** | 교수법 사례, 도구, 외부 벤치마킹 | ★☆☆~★★☆ 가변 |
 
 #### 4-2. 통합 알고리즘 (5단계) — 교안 맥락 재설계
@@ -1179,6 +1261,7 @@ NBLM 응답 끝에 "Is that ALL you need to know?" 수신 시:
 구성안 상속     ○           ○           ●    ← §1·§2·§3·§5 상속
 로컬 자료      ●     ○     ●     ○     ○    ← 교안 관점 재분석
 NBLM          ●     ○     ○     ○     ●
+Context7            ○     ●           ●    ← 조건부 (IT 강의만)
 인터넷         ●     ●     ●     ●     ○
 input_data    기준   기준   기준   기준
 ```
@@ -1195,7 +1278,7 @@ input_data    기준   기준   기준   기준
 | **충돌** — 소스 간 모순 | 아래 우선순위로 해결, 양쪽 기록 | `[주의: 불일치]` |
 | **단독** — 1소스에만 존재 | 출처 명시 | `[미검증]` |
 
-충돌 해결 우선순위: `input_data > 로컬 = NBLM > 웹`
+충돌 해결 우선순위: `input_data > 로컬 = NBLM = Context7 > 웹`
 
 **단계 4 — 고착 효과 필터링 (교안 버전)**
 
@@ -1435,6 +1518,8 @@ Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
    | SLO 보충 (C+D) | 3~4회 | §11 미커버 SLO 수에 비례 조정 |
    | **웹 총계** | **20~25회** | |
 
+   > **Context7 재배분**: 기술 스택 강의 시, 공식 문서 검색 목적의 웹 검색 2~3회를 Context7 호출로 대체 가능 (총 예산 유지).
+
    - 수행 순서: **로컬 → NBLM → 웹** (로컬/NBLM 결과가 웹 검색 방향을 보완)
    - 우선순위: 미커버 SLO 보충 > 활동/사례 검증 > 발문 뱅크
 
@@ -1452,7 +1537,7 @@ Phase 8: PACKAGE                 ┘→ Step 4: 정제 + 최종 산출물
 |------|------|
 | 입력 | `04_deep_plan.md`, `01_input_data.json`, `03_brainstorm_result.md` §11 |
 | 참조 | `.claude/skills/deep-research/SKILL.md` Phase 3 |
-| 도구 | Read, Glob, Bash(NBLM), WebSearch, WebFetch, Write |
+| 도구 | Read, Glob, Bash(NBLM), WebSearch, WebFetch, Write, mcp__Context7__resolve-library-id, mcp__Context7__get-library-docs (조건부) |
 | 산출물 | `{output_dir}/04_deep_local_nblm.md`, `{output_dir}/04_deep_web.md` |
 | 제약 | 웹 검색 20~25회, NBLM 노트북당 3~5쿼리 |
 

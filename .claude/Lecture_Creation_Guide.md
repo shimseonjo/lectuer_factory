@@ -217,8 +217,12 @@ writer-agent가 `06_write_lecture_outline.md` 내부에 `§시간표` 섹션을 
 | 3 | 브레인스토밍 | brainstorm-agent | 조건부 3~5축 발산(발문·활동·사례·PBL시나리오·평가), Bloom's 발문 배치, Gagne-GRR 매핑, SLO 정렬, 페르소나 시뮬레이션, 다관점 검증 |
 | 4 | 심화 리서치 | research-agent | 브레인스토밍 §11 기반 4대 영역(교수법 사례·발문 뱅크·활동 자료·형성평가 도구) 심화 수집, SLO-활동-평가 삼각 정렬 검증 |
 | 5 | 교안 구조 설계 | architecture-agent | 레슨 레벨 Backward Design, 교수 모델별 도입-전개-정리 구조, Gagné 사태·발문·GRR 배치, 분 단위 시간 설계, 3중 검증(시간합산+SLO정렬+Gagné순차) |
-| 6 | 교안 작성 | writer-agent | script-template.md 기반 GAIDE 5단계, 교수 모델별 도입-전개-정리 스크립트, 발문·활동·형성평가·발표자 노트, 분할 작성(≤10/11~25/26+), 3중 검증(SLO+시간+톤) |
-| 7 | 품질 검토 | review-agent | QM Rubric 기준 3·5 중심, 5영역 가중치(정렬20/전개25/발문20/시간20/톤15), 조건부 가중치 재배분, 4단계 판정, 파이프라인 3단계 정합성 |
+| 6a | 차시별 교안 작성 | writer-agent | 1차시 단위 순차 작성, Running Summary 기반 일관성 유지, script-template.md 차시 형식 준수 |
+| 6b | 차시별 경량 검토 | review-agent | 시간합산·SLO커버리지·Bloom's점진 3항목 즉시 검증, FAIL 시 1회 재작성 |
+| 6c | 4시간 모듈 통합 | writer-agent | 반일(4시간) 차시 병합, 일관성 패치, Synthesizer 삽입, Running Summary 리셋 |
+| 6d | 모듈 수준 검토 | review-agent | 차시 간 연결성·톤 일관성·난이도 점진·모듈 SLO 커버리지 4항목 검증 |
+| 7a | 최종 전체 통합 | writer-agent | 모든 모듈 병합 → 최종 교안, 코스 레벨 섹션(메타·시간표·정렬 매트릭스·부록) 추가 |
+| 7b | 최종 품질 검토 | review-agent | QM Rubric 기준 3·5 중심, 5영역 25항목 전체 검토, 교차 모듈 정합성 집중, 4단계 판정 |
 
 **적용 프레임워크**:
 - Madeline Hunter 6단계 (직접교수법)
@@ -367,11 +371,98 @@ writer-agent가 `06_write_lecture_outline.md` 내부에 `§시간표` 섹션을 
 
 - 상세 워크플로우: `.claude/agents/architecture-agent/AGENT.md`의 "강의교안 레슨 플랜 설계 (Phase 5) 세부 워크플로우" 섹션 참조
 
-#### Phase 6: 교안 작성 상세
+#### Phase 6: 차시별 반복 작성 + 4시간 모듈 통합 (3계층 아키텍처)
 
 **핵심 전환**: Phase 5가 "각 차시 안에서 어떻게 가르칠까"를 분 단위로 설계했다면, Phase 6은 **"교수자가 실제로 무엇을 말하고, 어떤 질문을 던지고, 어떤 활동을 진행하는가"**를 스크립트 수준으로 구체화한다.
 
-**GAIDE 5단계 + Step 0~4 매핑**: Step 0 Setup(컨텍스트 로드+조건부 분기 결정) → Step 1~2 Draft(교안 메타+차시별 스크립트 [분할 가능]) → Step 3 Refinement(SLO정렬+시간합산+톤일관성 검증·보강) → Step 4 Consolidation(최종 정제+부록+정렬 매트릭스)
+**설계 근거**: SAM(반복적 교수설계), LLM Hierarchical Expansion(계층적 생성), AWS Evaluate-Reflect-Refine 패턴, 교수설계 Macro-Meso-Micro 3단계 레이어
+
+**3계층 구조 (Macro-Meso-Micro)**:
+
+```
+Macro (전체 과정) ── Phase 7a: 최종 통합 + Phase 7b: 전체 검토
+  └── Meso (4시간 모듈 = 반일) ── Phase 6c: 모듈 통합 + Phase 6d: 모듈 검토
+        └── Micro (차시 = 50분) ── Phase 6a: 차시 작성 + Phase 6b: 차시 검토
+```
+
+**모듈 경계 결정 로직**:
+
+```
+sessions_per_day = floor(hours_per_day × 60 / (session_minutes + break_minutes))
+sessions_per_module = ceil(sessions_per_day / 2)  # 반일(4시간) 단위
+
+예시 (88교시, 11일, 8h/day, 50분+10분):
+  sessions_per_day = 8, sessions_per_module = 4
+  → 22개 모듈 (Day 1 오전 4교시 / Day 1 오후 4교시 / ...)
+```
+
+Phase A→B 등 매크로 구조 전환점이 모듈 중간에 발생하면, 해당 전환점을 모듈 경계로 보정한다.
+
+##### Phase 6a: 차시별 교안 작성 (writer-agent, session_write 모드)
+
+**입력**:
+- `05_arch_lesson_plan.md` 해당 차시 섹션 (분 단위 레슨 플랜)
+- `01_input_data.json` (script_settings)
+- `03_brainstorm_result.md` 관련 섹션 (발문, 활동, 사례)
+- `04_deep_research.md` 관련 섹션
+- `_running_summary.md` (이전 차시 누적 요약)
+- 직전 차시 파일 `06_session_{N-1}.md` (전환 멘트 연결용)
+
+**산출물**: `06_sessions/06_session_{NNN}.md` (예: `06_session_001.md`)
+
+**작성 범위**: 정확히 1개 차시. script-template.md의 차시 섹션 형식 준수.
+
+**Running Summary 규칙**:
+- 차시 작성 완료 시 핵심 내용 2~3문장을 `_running_summary.md`에 append
+- 항목: (1) 다룬 핵심 개념, (2) 마지막 전환 멘트/예고, (3) 학습자 산출물
+- 모듈 통합(6c) 시 모듈 수준 요약으로 리셋 (누적 오차 방지)
+
+##### Phase 6b: 차시별 경량 검토 (review-agent, session_review 모드)
+
+**검토 항목 (3개)**:
+
+| 항목 | 기준 | FAIL 시 처리 |
+|------|------|------------|
+| 시간 합산 | 도입+전개+정리 하위단계 합 = session_minutes (±1분) | writer-agent 1회 재작성 |
+| SLO 커버리지 | 해당 차시 SLO 전체가 전개 활동에 매핑 | writer-agent 1회 재작성 |
+| Bloom's 점진 | 도입(저)→전개(중)→정리(중~고) 패턴 | writer-agent 1회 재작성 |
+
+**재시도 규칙**: FAIL→writer 1회 재호출→2차 FAIL→경고 기록 후 진행 (모듈 검토에서 처리). 최대 재시도 1회.
+
+##### Phase 6c: 4시간 모듈 통합 (writer-agent, module_integrate 모드)
+
+**발동 조건**: 해당 모듈의 모든 차시가 6a+6b를 통과한 후 자동 발동
+
+**입력**:
+- 해당 모듈의 `06_session_{N}.md` 파일들 (4교시 기준 4개)
+- `05_arch_lesson_plan.md` 해당 Day/모듈 섹션
+- `_running_summary.md`
+- 이전 모듈 통합본 `06_module_{K-1}.md` (모듈 간 연결용)
+
+**작업 내용**:
+1. **병합**: 차시 파일들을 단일 `06_module_{NN}.md`로 병합
+2. **일관성 패치**: 용어 통일, 전환 멘트 매끄럽게 다듬기, tone_examples 배분 확인
+3. **Synthesizer 삽입**: 모듈 말미에 "이 4시간에서 배운 핵심" 종합 요약 (분절 학습 방지)
+4. **Running Summary 리셋**: 모듈 수준 요약으로 갱신 (이전 모듈 1~2문장 + 현재 모듈 상세)
+
+**산출물**: `06_modules/06_module_{NN}.md` (예: `06_module_01.md`)
+
+##### Phase 6d: 모듈 수준 검토 (review-agent, module_review 모드)
+
+**검토 항목 (4개)**:
+
+| 항목 | 기준 |
+|------|------|
+| 차시 간 연결성 | 전환 멘트 존재, 산출물 연쇄, 이전 차시 참조 |
+| 톤 일관성 | 모듈 내 문체/용어 통일, tone_examples 배치 |
+| 난이도 점진 | 모듈 내 Bloom's 수준 상승 패턴 |
+| 모듈 SLO 커버리지 | 해당 반일의 SLO 전체가 활동+평가에 커버 |
+
+**FAIL 시**: writer-agent 모듈 수정 모드로 1회 재호출. 2차 FAIL 시 경고 기록 후 진행.
+
+**산출물**: `06_modules/06_module_{NN}_review.md`
+
+##### 스크립트 상세도·교수 모델별 구조·발문·형성평가 (공통 규칙)
 
 **스크립트 상세도 3수준** (`script_detail_level`):
 
@@ -407,34 +498,46 @@ writer-agent가 `06_write_lecture_outline.md` 내부에 `§시간표` 섹션을 
 - SLO별 최소 1개 평가 커버리지 필수 (type ≠ none 시)
 - 결과에 따른 분화 방안 표기 (80%+→진행 / 50~79%→재설명 / 50%미만→We Do 추가)
 
-**분할 작업 (Chunk Writing)** — 대규모 교안 자동 분할:
-
-| 작성 대상 차시 수 | 작성 모드 | 동작 |
-|----------------|---------|------|
-| ≤ 10교시 | **단일 패스** | 전체 교안을 한 번에 작성 |
-| 11~25교시 | **2분할** | Day 그룹 2개로 나눠 순차 작성 → 병합 |
-| 26교시+ | **3분할** | Day 그룹 3개로 나눠 순차 작성 → 병합 |
-
-임계치가 구성안(20/40)보다 낮은 이유: 교안은 차시당 작성량이 3~5배(발화+발문+활동 상세).
-
-**템플릿**: `.claude/templates/script-template.md` (메타데이터, 차시별 교안, 정렬 매트릭스, 부록 구조 정의)
+**템플릿**: `.claude/templates/script-template.md` (차시별 교안, 모듈별 통합, 최종 교안 구조 정의)
 
 **Gagné 사태 표기 3모드**: `all_9`(9사태 전체 라벨 `[Gagné 1: 주의집중]`) / `core_5`(핵심 5사태 `[G1 주의집중]`) / `none`(라벨 생략, 수업 단계명만)
 
-**3중 검증** (`06_write_lecture_script.md` 완성 전 필수):
+- 상세 워크플로우: `.claude/agents/writer-agent/AGENT.md`의 "강의교안 차시별 작성", "모듈 통합", "최종 통합" 섹션 참조
 
-| 검증 | 기준 | FAIL 시 처리 |
-|------|------|------------|
-| SLO 정렬 | 모든 SLO가 활동 + 발문 + 형성평가에 매핑, Bloom's 일치 | 미커버 SLO에 활동/평가 추가 |
-| 시간 합산 | 차시별 하위 단계 합 = session_minutes (±1분), 전체 비율 오차 5% 이내 | 유연한 활동에서 시간 조정 |
-| 톤 일관성 | 용어/문체/학습자 수준/전환 멘트/tone_examples 배치 | 톤 수정, 전환 멘트 보완 |
+#### Phase 7: 최종 전체 통합 + 품질 검토
 
-- 상세 워크플로우: `.claude/agents/writer-agent/AGENT.md`의 "강의교안 작성 (Phase 6) 세부 워크플로우" 섹션 참조
+##### Phase 7a: 최종 전체 통합 (writer-agent, final_integrate 모드)
+
+**입력**: 모든 `06_module_{NN}.md` + `01_input_data.json` + `05_arch_lesson_plan.md` + 구성안 `06_write_lecture_outline.md`
+
+**작업**:
+- 모든 모듈을 `06_write_lecture_script.md`로 최종 병합
+- 코스 레벨 섹션 추가: 메타데이터, 강의 개요, 학습 목표, 시간표, 교수학적 정렬 매트릭스, 부록
+- 전체 발문 인덱스 생성 (questioning_design.include 시)
+
+##### Phase 7b: 최종 품질 검토 (review-agent, script_full_review 모드)
+
+- 기존 5영역 25항목 + QM Rubric 전체 검토
+- 하위 레벨(차시·모듈)에서 이미 통과한 항목은 경량 확인
+- **교차 모듈 정합성**에 집중: 전체 정렬 매트릭스 완전성, 파이프라인 정합성, 전체 톤 일관성
+- 기존 4단계 판정 (APPROVED / AWN / REVISE / REVISE MAJOR) 유지
+
+#### 품질 검토 3계층 비교
+
+| 계층 | 시점 | 에이전트 모드 | 검토 항목 수 | 초점 | FAIL 시 처리 |
+|------|------|------------|-----------|------|------------|
+| **Micro (차시)** | 6b | session_review | 3 | 시간/SLO/Bloom's | writer 1회 재작성 |
+| **Meso (모듈)** | 6d | module_review | 4 | 연결성/톤/난이도/모듈SLO | writer 모듈수정 1회 |
+| **Macro (전체)** | 7b | script_full_review | 25+QM | 파이프라인 정합/전체 정렬 | 기존 판정 분기 |
+
+**원칙**: 하위 계층에서 걸러진 문제는 상위 계층에서 재검토하지 않는다. 상위는 하위에서 볼 수 없는 **교차 차시/교차 모듈** 문제에 집중한다.
 
 **데이터 흐름**:
 ```
 구성안 로드 → 01_input_data.json → 02_explore_research.md → 03_brainstorm_result.md
-→ 04_deep_research.md → 05_arch_lesson_plan.md → 06_write_lecture_script.md → 07_review_quality.md
+→ 04_deep_research.md → 05_arch_lesson_plan.md
+→ [차시 루프: 06_session_{NNN}.md × N] → [모듈 루프: 06_module_{NN}.md × M]
+→ 06_write_lecture_script.md → 07_review_quality.md
 ```
 
 **산출물**: `lectures/YYYY-MM-DD_{강의명}/02_script/06_write_lecture_script.md`
@@ -550,9 +653,17 @@ lectures/
     │   ├── 04_deep_plan.md                      # Phase 4: 심화 리서치 계획
     │   ├── 04_deep_research.md                  # Phase 4: 심화 리서치 최종 ★
     │   ├── 05_arch_lesson_plan.md               # Phase 5: 차시별 레슨 플랜 구조 설계
-    │   ├── 06_write_script_draft.md             # Phase 6: 교안 초안 (중간)
-    │   ├── 06_write_lecture_script.md           # Phase 6: 최종 교안 ★
-    │   └── 07_review_quality.md                 # Phase 7: 품질 검토
+    │   ├── _running_summary.md                  # Phase 6: 누적 요약 (차시·모듈 작성 시 갱신)
+    │   ├── 06_sessions/                         # Phase 6a: 차시별 교안
+    │   │   ├── 06_session_001.md
+    │   │   ├── 06_session_002.md
+    │   │   └── ...
+    │   ├── 06_modules/                          # Phase 6c: 4시간 모듈 통합
+    │   │   ├── 06_module_01.md
+    │   │   ├── 06_module_01_review.md           # Phase 6d: 모듈 검토
+    │   │   └── ...
+    │   ├── 06_write_lecture_script.md           # Phase 7a: 최종 통합 교안 ★
+    │   └── 07_review_quality.md                 # Phase 7b: 최종 품질 검토
     ├── 03_slide_plan/                        # /slide-planning 산출물
     │   └── 06_write_slide_plan.md               # 최종 슬라이드 기획 ★
     └── 04_slides/                            # /slide-generation 산출물
@@ -576,8 +687,9 @@ lectures/
 03_brainstorm_review.md          # Phase 3 중간: 다관점 검증 (Step 3)
 04_deep_local_nblm.md            # Phase 4 중간: 로컬/NBLM 심화 재분석 (Step 1)
 04_deep_web.md                   # Phase 4 중간: 웹 심화 수집 결과 (Step 1)
-06_write_script_draft.md         # Phase 6 중간: 교안 초안
-06_write_script_chunk_N.md       # Phase 6 중간: 분할 작성 청크 (N=1,2,3)
+06_sessions/06_session_NNN.md    # Phase 6a: 차시별 교안 (NNN=001,002,...)
+06_modules/06_module_NN.md       # Phase 6c: 4시간 모듈 통합 (NN=01,02,...)
+06_modules/06_module_NN_review.md # Phase 6d: 모듈 검토 결과
 ```
 
 ### 공통 규칙

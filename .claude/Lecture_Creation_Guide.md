@@ -552,28 +552,57 @@ Phase A→B 등 매크로 구조 전환점이 모듈 중간에 발생하면, 해
 
 | Phase | 단계 | 에이전트 | 핵심 작업 |
 |-------|------|---------|----------|
-| 1 | 입력 수집 | input-agent | 교안 로드, 슬라이드 도구(Marp/Slidev/Gamma) 선택 |
+| 1 | 입력 수집 | input-agent | 교안 2계층 로드(모듈 교안 주 입력), 자동 추론 5개 + 사용자 질문 2개(도구·밀도) |
 | 2 | 브레인스토밍 | brainstorm-agent | 시각화 아이디어, 레이아웃 패턴 구상, 인터랙션 요소 |
 | 3 | 구조 설계 | architecture-agent | 슬라이드 수 결정, 유형 배정, 순서, 시간 배분 |
-| 4 | 기획안 작성 | writer-agent | slide-plan-template.md 기반, 슬라이드별 목적/레이아웃/콘텐츠/시각자료 |
+| 4 | 기획안 작성 | writer-agent | 슬라이드별 목적/레이아웃/콘텐츠/시각자료 |
 | 5 | 품질 검토 | review-agent | 정보 밀도, 시각 계층, 학습목표 정렬, 슬라이드 수 적절성 |
 
 **설계 원칙**:
 - 슬라이드당 1개 아이디어 (인지 부하 이론)
-- 정보 밀도: 텍스트 5-7줄, 불릿 4-5개 이하
-- 시간 기준: 1-2분/슬라이드 (교육용은 활동 시간 별도)
-- Assertion-Evidence 구조 (불릿포인트 대체)
+- 정보 밀도: 3단계 프리셋 (교육용 표준 8-15줄 / 고밀도 참조형 15-21줄 / 프레젠테이션형 5-7줄)
+- 시간 기준: 2-3분/슬라이드 (교육용 표준), 유형별 적응적 밀도 (활동 시간 별도)
+- Assertion-Evidence 구조 3수준: 전면 적용(full) / 부분 적용(partial) / 전통 불릿(bullet) — 밀도 프리셋에 따라 자동 결정
 
-**슬라이드 유형 (12가지)**:
-제목, 아젠다, 섹션전환, 개념설명, 코드, 비교, 데이터+인사이트, 이미지, 타임라인, 인용, 핵심요약, 실습/활동
+**슬라이드 유형 (13가지)**:
+제목, 아젠다, 섹션전환, 개념설명, 코드, 비교, 데이터+인사이트, 이미지, 타임라인, 인용, 핵심요약, 실습/활동, **퀴즈/형성평가**
 
-**시간별 슬라이드 수 기준**:
+**슬라이드 수 산출 공식**: `session_minutes / 3` (50분 차시 → ~17장, 범위 10-25장)
+- 차시당 구성: 도입 2-3장 + 전개 10-15장 + 정리 2-3장
+- 모듈당: ~70-75장 (4교시 × ~17장 + 모듈 프레임 ~4장)
 
-| 시간 | 슬라이드 수 |
-|------|-----------|
-| 30분 | 15-32장 |
-| 60분 | 30-45장 |
-| 90분 | 45-70장 |
+#### Phase 1: 입력 수집 상세
+
+**교안 2계층 분리 로드 (사용자 개입 없음)**:
+- Layer 1: `06_write_lecture_script.md` 상단 ~200줄 → 코스 레벨 메타데이터 (topic, target_learner, format, schedule, teaching_model, tone, SLO, timetable, alignment_matrix)
+- Layer 2: `06_modules/06_module_{NN}.md` × N개 → 차시별 상세 콘텐츠 (모듈 헤더, 도입/전개/정리, 발문, 활동, 형성평가, 발표자 노트, Synthesizer)
+- Layer 3: `01_input_data.json` (교안·구성안) → 보조 설정 (teaching_model, script_settings, tone_examples, lab_environment, keywords)
+- 콘텐츠 유형 자동 탐지: `has_code_content`, `has_activity_content`, `has_quiz_content`
+
+**자동 추론 5개** — 이전 단계 산출물에서 결정적 파생 (사용자에게 재질문하지 않음)
+
+| # | 카테고리 | 추론 소스 | 추론 로직 |
+|---|---------|----------|----------|
+| PQ1 | 슬라이드 작성 범위 | `script_settings.target_scope` | 교안 작성 범위와 동기화 |
+| PQ4 | Assertion-Evidence | PQ3(밀도) 결과 | 밀도→A-E 결정적 매핑 (educational→full, high_density→partial, presentation→full) |
+| PQ5 | 디자인 톤 | `inherited.tone` 텍스트 | 키워드 매칭 (비유/친근→educational, 전문/기업→professional, 간결/미니멀→minimal) |
+| PQ6 | 발표자 노트 | 교안 워크플로우 특성 | 항상 `include = true` |
+| PQ7 | 코드 테마 | `derived.has_code_content` | 코드 존재 시 `dark` 자동 설정 |
+
+**사용자 질문 2개** — AskUserQuestion 1회 호출 (2개 묶음)
+
+| # | 카테고리 | 질문 | 입력 형태 |
+|---|---------|------|----------|
+| PQ2 | 슬라이드 도구 | 슬라이드 생성에 사용할 도구 선택 | 선택지: Marp(추천) / Slidev / Gamma / reveal.js — 콘텐츠 기반 자동 추천 |
+| PQ3 | 정보 밀도 | 슬라이드 정보 밀도 프리셋 선택 | 선택지: 교육용 표준(추천) / 고밀도 참조형 / 프레젠테이션형 |
+
+**자동 추론 확인 게이팅** — AskUserQuestion 1회
+- "자동 설정 그대로 진행"(추천) / "세부 설정 조정"
+- 세부 조정 시 → PQ4(A-E) + PQ5(톤) + PQ7(코드 테마) 추가 질문 1회
+
+**AskUserQuestion 호출 전략**: 최소 2회 ~ 최대 3회 (폴더선택 별도)
+
+스키마: `.claude/temp/design_slide_plan_phase1.md` B섹션 참조
 
 **산출물**: `lectures/YYYY-MM-DD_{강의명}/03_slide_plan/06_write_slide_plan.md`
 
@@ -686,7 +715,13 @@ lectures/
     │   ├── 06_write_lecture_script.md           # Phase 7a: 최종 통합 교안 ★
     │   └── 07_review_quality.md                 # Phase 7b: 최종 품질 검토
     ├── 03_slide_plan/                        # /slide-planning 산출물
-    │   └── 06_write_slide_plan.md               # 최종 슬라이드 기획 ★
+    │   ├── 01_input_data.json                   # Phase 1: 교안 로드 + 도구/밀도 설정
+    │   ├── 03_brainstorm_divergent.md           # Phase 2: 시각화 아이디어 발산 (중간)
+    │   ├── 03_brainstorm_convergent.md          # Phase 2: 수렴·패턴 매핑 (중간)
+    │   ├── 03_brainstorm_result.md              # Phase 2: 브레인스토밍 최종 ★
+    │   ├── 05_arch_slide_structure.md           # Phase 3: 슬라이드 구조 설계
+    │   ├── 06_write_slide_plan.md               # Phase 4: 최종 기획안 ★
+    │   └── 07_review_quality.md                 # Phase 5: 품질 검토
     └── 04_slides/                            # /slide-generation 산출물
         └── 06_write_slides.md                   # 최종 슬라이드 ★
 ```

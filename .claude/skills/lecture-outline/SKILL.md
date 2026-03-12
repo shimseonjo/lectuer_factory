@@ -151,7 +151,7 @@ revision_count = 0
 
 ```
 lectures/YYYY-MM-DD_{강의명}/01_outline/
-├── 01_input_data.json              # Phase 1: 사용자 입력 (Q1~Q12)
+├── 01_input_data.json              # Phase 1: 사용자 입력 (Q1~Q14)
 ├── 02_explore_plan.md             # Phase 2: 리서치 계획
 ├── 02_explore_local.md            # Phase 2: 로컬 참고자료 분석
 ├── 02_explore_nblm.md             # Phase 2: NotebookLM 쿼리 결과

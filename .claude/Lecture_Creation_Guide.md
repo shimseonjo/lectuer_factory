@@ -584,7 +584,7 @@ Phase A→B 등 매크로 구조 전환점이 모듈 중간에 발생하면, 해
 | # | 카테고리 | 추론 소스 | 추론 로직 |
 |---|---------|----------|----------|
 | PQ1 | 슬라이드 작성 범위 | `script_settings.target_scope` | 교안 작성 범위와 동기화 |
-| PQ3 | 적응형 밀도 | 세션 유형 + 슬라이드 유형 | v4 기준 유형별 밀도 자동 적용: concept 20-30, code 25-35, comparison 20-30, data_insight 15-25, image 10-20, timeline 15-25, summary 15-25, activity 20-30, quiz 15-25, title 3-5, agenda 8-12, section_transition 3-5, quote 5-10 (전체 3-35줄) |
+| PQ3 | 적응형 밀도 | 세션 유형 + 슬라이드 유형 | 유형별 밀도 자동 적용: concept 15-25, code 25-35, comparison 20-30, data_insight 10-20, image 8-15, timeline 12-20, summary 15-25, activity 15-25, quiz 10-20, title 3-5, agenda 5-12, section_transition 3-5, quote 5-10 (전체 3-35줄) |
 | PQ4 | Assertion-Evidence | 고정값 | partial (Headline 유지, 시각 증거 30-40%) |
 | PQ5 | 디자인 톤 | L3: `inherited.tone` (primary), L4: `tone_examples` (보조) | 키워드 매칭 (비유/친근→educational, 전문/기업→professional, 간결/미니멀→minimal, fallback→format.type 기반) |
 | PQ6 | 발표자 노트 | 교안 워크플로우 특성 | 항상 `include = true` |

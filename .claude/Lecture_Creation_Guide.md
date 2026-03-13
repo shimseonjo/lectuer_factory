@@ -556,7 +556,7 @@ Phase A→B 등 매크로 구조 전환점이 모듈 중간에 발생하면, 해
 | 2 | 브레인스토밍 | brainstorm-agent | 조건부 3~5축 발산(유형별 시각화·메타포·코드·활동퀴즈·레이아웃), 4기준 가중 수렴(밀도·시각계층·인지부하·도구호환), A-E/도구 호환 매핑, 3역할 다관점 검증(시각 디자인 회의론자·청중 대리인·슬라이드 정렬 중재자), 11섹션 최종 통합 |
 | 3 | 구조 설계 | architecture-agent | 12필드 추출+상속 범위 정의, 세션 유형 분류(교수 모델 보정), 도구별 레이아웃 카탈로그(Marp/Slidev/reveal.js/Gamma), 7조건 분기, 예산 공식, brainstorm §별 매핑, SLO→유형+Gagné→위치+3-소스 통합, 세션 유형별 시퀀스 템플릿+7규칙 시퀀싱+레이아웃 배정, 6중 검증(슬라이드수+시간+밀도+SLO+인지부하+내러티브, 조건부 SKIP) |
 | 4 | 기획안 작성 | writer-agent | 3계층(Micro-Meso-Macro) 세션별 순차 작성, 슬라이드별 9필드(Assertion Headline/콘텐츠/시각자료/레이아웃/발표자 노트 5항목/시간/SLO/교안매핑), Visual Summary, 자체 검증 4항목, Day 통합, 6중 검증 |
-| 5 | 품질 검토 | review-agent | 정보 밀도, 시각 계층, 학습목표 정렬, 슬라이드 수 적절성 |
+| 5 | 품질 검토 | review-agent | QM Rubric 기준 4(교수자료)·5(학습활동) 상세 + 5영역 25항목 가중치 체크리스트(밀도25/시각20/정렬25/슬라이드수15/가독성15), 조건부 SKIP 5개, 독립 재산출, 파이프라인 정합성 3테이블, 4단계 판정, 자동 REVISE 4조건, Phase 2/3/4 재실행 결정 |
 
 **설계 원칙**:
 - 슬라이드당 1개 아이디어 (인지 부하 이론)
@@ -816,6 +816,56 @@ Assertion Headline 작성 규칙 — 유형별 A-E 적용:
 
 상세 워크플로우: `.claude/agents/writer-agent/AGENT.md`의 "슬라이드 기획 기획안 작성 (Phase 4) 세부 워크플로우" 섹션 참조
 
+#### Phase 5: 품질 검토 상세
+
+**핵심 전환**: Phase 1-4가 설계·작성했다면, Phase 5는 **독립적 외부 검토자 관점**에서 "이 기획안으로 효과적인 슬라이드를 제작할 수 있는가?"를 QM 기준 4(교수자료)·5(학습활동) 중심으로 검증한다.
+
+**입력 4개**: `06_write_slide_plan.md` + `01_input_data.json` + `05_arch_slide_structure.md` + `{script_dir}/06_sessions/` (샘플 2-3개)
+
+**4단계 워크플로우**: Step 0(컨텍스트 로드 + 검토 기준선 수립) → Step 1(QM Rubric 적합성 검토) → Step 2(5영역 25항목 심층 검토) → Step 3(종합 판정 + 산출물 작성)
+
+**Step 0 — 컨텍스트 로드 + 검토 기준선 수립** (6개 동작):
+- 06_write_slide_plan.md 전체 로드 + 01_input_data.json 핵심 필드 12개 추출 (`slide_settings` 6개 + `inherited` 4개 + `derived` 3개)
+- 05_arch_slide_structure.md §1-§7 로드 — §1(세션 유형), §2(시퀀스), §3(SLO 매핑), §4(6중 검증), §6(레이아웃), §7(인지부하 관리 맵)
+- 교안 세션 파일 샘플 2-3개 로드 (서로 다른 세션 유형 우선)
+- 조건부 SKIP 5개 확정 — `has_code=false`→1-5 SKIP, `A-E=none`→2-1·5-1 기준 완화, `총 슬라이드≤10`→4-5 SKIP, `has_activity=false AND has_quiz=false`→3-5 SKIP, `notes.include=false`→5-2 SKIP
+- **독립 재산출** — 검토자가 세션별 기대 슬라이드 수를 직접 계산: `실질_노출_시간 = session_minutes - activity_time - 5분` → `÷ 유형별_평균_시간` → `× 교수모델_보정(DI:1.0, PBL:0.7, Flipped:0.5, Mixed:0.85)` → `clamp(세션유형 최소~최대)`. 이 값과 기획안 실제 슬라이드 수를 대조 (항목 4-1)
+
+**Step 1 — QM Rubric 적합성 검토**:
+- 기준 4(Instructional Materials) **상세** — 4.1(SLO 기여), 4.2(목적 명확, Assertion Headline), 4.3(신뢰 자료, 시각 구체성), 4.4(다양한 관점, comparison 슬라이드)
+- 기준 5(Learning Activities) **상세** — 5.1(활동-SLO 정렬), 5.2(인터랙션 다양성, activity+quiz ≥15%, AWSM 루브릭), 5.3(피드백 분기 설계)
+- 기준 1·2·8 간략 확인 (메타데이터 정합, SLO 상속, 접근성)
+- QM 점수: 3(충족)/2(부분)/1(미충족). **기준 4 또는 5가 1점 → 자동 REVISE**
+
+**Step 2 — 5영역 25항목 심층 검토**:
+
+| 영역 | 가중치 | 5개 항목 핵심 | 참조 프레임워크 |
+|------|--------|-------------|-------------|
+| 정보 밀도 | 25% | 유형별 밀도 범위, 1아이디어/1슬라이드, Rule of Three(≤3), 노트 분리(Mayer 중복성), 코드 밀도 | AWSM 루브릭, Mayer 중복성 원칙 |
+| 시각 계층 | 20% | A-E partial 적용, 레이아웃 일관성, 시각 자료 구체성, 도구 호환성, 크로스-세션 시각 일관 | Assertion-Evidence, 도구별 제약 |
+| 학습목표 정렬 | 25% | SLO 커버리지, Bloom's-유형 정합(교차표), 교안 매핑 정확성, Gagné 배치 정합, 활동·퀴즈 SLO 연결 | QM 기준 4·5, Bloom's Taxonomy |
+| 슬라이드 수 | 15% | 세션 유형별 범위(독립 재산출 대조), 시간 합산, 유형별 시간 범위, 활동 시간 분리, 인지부하 전환 간격 | 인지 부하 이론, R4·R6 규칙 |
+| 가독성 | 15% | Assertion Headline 명확성, 노트 5항목 완성도, 전환 멘트 연속성, 접근성(WCAG AA), 문서 완성도 | WCAG 2.1, slide-plan-template.md |
+
+항목별 0~10점, SKIP 항목 제외 후 영역 평균 → 가중 합산 = 총점
+
+**Step 3 — 종합 판정 + 산출물 작성**:
+- **총점**: `(밀도 × 0.25) + (시각 × 0.20) + (정렬 × 0.25) + (슬라이드수 × 0.15) + (가독성 × 0.15)`
+- **4단계 판정**: APPROVED(8.0+), APPROVED WITH NOTES(6.0-7.9), REVISE(4.0-5.9), REVISE MAJOR(0-3.9)
+- **자동 REVISE 4조건**: ①QM 기준 4 or 5 = 1점, ②영역1+3 평균 <5.0, ③SLO 커버리지 <90%, ④범위 이탈 세션 >30%
+- **수정 지시**: P0(Critical) ~ P3(Suggestion) 우선순위, 항목별 권장 Phase(2/3/4) 기록
+- **파이프라인 정합성 3테이블**: input→plan(8필드), arch→plan(§1-§7 6항목), script→plan(샘플 교안 매핑·콘텐츠 파생·시간 대응)
+- **재실행 Phase 결정**:
+  - Phase 4(writer-agent): Assertion 재작성, 밀도 조정, 노트 보강, 레이아웃 교체, 전환 멘트, 시각 자료 구체화 — arch 구조 변경 불필요일 때
+  - Phase 3(architecture-agent): 슬라이드 수 부적절, 시퀀스 비논리적, SLO 미커버 구조 원인, Gagné 배치 역전
+  - Phase 2(brainstorm-agent): 영역 2(시각 계층) 평균 <4.0, 도구 호환 전략 부재, 크로스-세션 일관성 없음
+
+**수정 모드**: Phase 5는 검토만 수행. REVISE 시 Skill 오케스트레이터가 `07_review_quality.md`의 `§6-1 권장 재실행 시작 Phase`를 파싱하여 해당 에이전트를 수정 모드로 호출.
+
+**산출물**: `07_review_quality.md` — §1(종합 판정·점수·SKIP·강점) + §2(QM 적합성) + §3(5영역 상세) + §4(수정 지시) + §5(파이프라인 정합성) + §6(재실행 가이드, REVISE 시만)
+
+상세 워크플로우: `.claude/agents/review-agent/AGENT.md`의 "슬라이드 기획 품질 검토 (Phase 5) 세부 워크플로우" 섹션 참조
+
 **데이터 흐름**:
 ```
 교안 4계층 로드 → 01_input_data.json → 03_brainstorm_result.md
@@ -984,6 +1034,13 @@ lectures/
 - `formative_assessment.type == "none"` → 형성평가 관련 항목(1-3, 4-5) SKIP (영역 내 나머지 항목 평균)
 - `gagne_display.mode == "none"` → Gagné 완성도 항목(2-3) SKIP (영역 내 나머지 항목 평균)
 
+**슬라이드 기획 조건부 SKIP**: 슬라이드 기획은 입력 데이터의 `derived` 필드와 설정에 따라 특정 체크 항목을 동적으로 건너뛴다.
+- `has_code_content == false` → 항목 1-5(코드 슬라이드 밀도) SKIP
+- `assertion_evidence.level == "none"` → 항목 2-1·5-1 기준 완화 (제목형 Headline 허용, 시각 증거 비율 SKIP)
+- 총 슬라이드 ≤ 10 → 항목 4-5(인지부하 전환 간격) SKIP
+- `has_activity == false AND has_quiz == false` → 항목 3-5(활동·퀴즈 SLO 연결) SKIP
+- `speaker_notes.include == false` → 항목 5-2(발표자 노트 완성도) SKIP
+
 **워크플로우별 상세**: `.claude/agents/review-agent/AGENT.md`의 "워크플로우별 동작" 비교 테이블 참조
 
 ### REVISE 판정 후속 처리 (재실행 루프)
@@ -997,11 +1054,11 @@ lectures/
 
 **재실행 Phase 결정**: review-agent가 수정 지시별 "권장 재실행 Phase" 기록 → `max(P0/P1 항목의 권장 Phase)`가 시작점
 
-| 문제 유형 | 구성안 예시 | 교안 예시 | 권장 Phase |
-|---------|-----------|---------|----------|
-| 문서/스크립트 수준 수정 | 동사 교체, 시간 조정, BOPPPS 보완, 메타데이터, 톤 | 발화 보강, 발문 교체, 시간 미세조정, 톤 수정, 형성평가 문항 보강, 발표자 노트, 전환 멘트 | Phase 6 |
-| 구조적 문제 | 정렬 맵, 차시 재배치, 평가 재설계, Phase 비율 | 레슨 플랜 재설계, GRR/Gagné 재배치, 활동 대폭 교체, SLO-활동 매핑 변경 | Phase 5 |
-| 자료 부족 | 참고문헌 부족, 근거 자료 부재, 미검증 과다 | 발문 은행 부족, 활동 사례 부족, 형성평가 도구 부족 | Phase 4 |
+| 문제 유형 | 구성안 예시 | 교안 예시 | 슬라이드 기획 예시 | 권장 Phase (구성안/교안 → 슬기획) |
+|---------|-----------|---------|---------------|----------|
+| 콘텐츠 수준 수정 | 동사 교체, 시간 조정, BOPPPS 보완, 메타데이터, 톤 | 발화 보강, 발문 교체, 시간 미세조정, 톤 수정, 형성평가 문항 보강, 발표자 노트, 전환 멘트 | Assertion 재작성, 밀도 조정, 노트 보강, 레이아웃 교체, 전환 멘트, 시각 자료 구체화 | Phase 6 → Phase 4 |
+| 구조적 문제 | 정렬 맵, 차시 재배치, 평가 재설계, Phase 비율 | 레슨 플랜 재설계, GRR/Gagné 재배치, 활동 대폭 교체, SLO-활동 매핑 변경 | 슬라이드 수 부적절, 시퀀스 비논리적, SLO 미커버 구조 원인, Gagné 배치 역전, 유형 다양성 부족 | Phase 5 → Phase 3 |
+| 전략/자료 부족 | 참고문헌 부족, 근거 자료 부재, 미검증 과다 | 발문 은행 부족, 활동 사례 부족, 형성평가 도구 부족 | 시각 계층 전반 미흡, 도구 호환 전략 부재, 크로스-세션 일관성 없음, 메타포 시각화 부재 | Phase 4 → Phase 2 |
 
 **최대 재시도**: 1회 (원본 + 수정 = 총 2회). 2차 REVISE 시 사용자 개입 요청.
 
@@ -1030,7 +1087,7 @@ lectures/
 | **PBL 6단계** | 교안 (PBL) | 문제 시나리오 → 문제 정의 → 탐구 → 해결책 개발 → 발표 → 성찰 |
 | **Before/During/After** | 교안 (플립러닝) | 사전학습 확인 → 개념 명확화 → 그룹 활동 → 심화 적용 → 사후 과제 |
 | **GRR** | 교안 | I Do(교사 시범) → We Do(안내 연습) → You Do(독립 수행), Phase A~D별 비율 자동 배치 |
-| **QM Rubric** | 품질 검토 | 8개 일반 기준 (구성안: 2·3 필수, 교안: 3·5 필수), 목표-활동-평가 정렬 |
+| **QM Rubric** | 품질 검토 | 8개 일반 기준 (구성안: 2·3 필수, 교안: 3·5 필수, 슬기획: 4·5 필수), 목표-활동-평가 정렬 |
 | **2-Pass Research** | 구성안, 교안 | 탐색적 리서치(문제 공간) → 브레인스토밍 → 심화 리서치(아이디어 검증) |
 | **Assertion-Evidence** | 슬라이드 | 주장 제목 + 시각 증거 (불릿포인트 대체) |
 
@@ -1062,3 +1119,10 @@ lectures/
 - PMC Naegle 2021 (Ten Simple Rules for Effective Slides)
 - McGill University Teaching KB (교육용 슬라이드 설계)
 - Marp, Slidev, reveal.js 공식 문서
+
+### 슬라이드 품질 검증
+- AWSM Rubric (Academic Writing and Slide Making) — 슬라이드 복잡도 최고 가중치
+- PresentBench 2024 (프레젠테이션 품질 5차원 평가)
+- Mayer's Multimedia Learning Principles — 중복성 원칙(노트≠슬라이드 복사), 분절 원칙
+- WCAG 2.1 AA (색상 대비 4.5:1/3:1, 색각 이상 대응)
+- Assertion-Evidence Design (Garner & Alley, IEEE/ASEE)

@@ -404,7 +404,7 @@ PBL + AI-first, 실습 비율 50% 이상
 | # | 카테고리 | 추론 소스 | 추론 로직 |
 |---|---------|----------|----------|
 | PQ1 | 슬라이드 작성 범위 | `script_settings.target_scope` | 교안 작성 범위와 동기화 (교안이 없는 차시는 기획 불가) |
-| PQ3 | 정보 밀도 | 세션 콘텐츠 유형 분석 | 유형별 적응형 밀도 자동 결정 — v4 기준: concept 20-30줄, code 25-35줄, comparison 20-30줄, data_insight 15-25줄, image 10-20줄, timeline 15-25줄, summary 15-25줄, activity 20-30줄, quiz 15-25줄, title 3-5줄, agenda 8-12줄, section_transition 3-5줄, quote 5-10줄. 전체 범위 3-35줄 |
+| PQ3 | 정보 밀도 | 세션 콘텐츠 유형 분석 | 유형별 적응형 밀도 자동 결정: concept 15-25줄, code 25-35줄, comparison 20-30줄, data_insight 10-20줄, image 8-15줄, timeline 12-20줄, summary 15-25줄, activity 15-25줄, quiz 10-20줄, title 3-5줄, agenda 5-12줄, section_transition 3-5줄, quote 5-10줄. 전체 범위 3-35줄 |
 | PQ5 | 디자인 톤 | L3: 교안 메타데이터 `톤/스타일` → `inherited.tone` (primary), L4: `tone_examples` (보조) | 키워드 매칭: 비유/친근→educational, 전문/기업→professional, 간결/미니멀→minimal, fallback→format.type 기반 |
 | PQ6 | 발표자 노트 | 교안 워크플로우 특성 | 항상 `include = true` |
 | PQ7 | 코드 테마 | `derived.has_code_content` | 코드 존재 시 `dark` 자동 설정, 없으면 `applicable = false` |
@@ -435,7 +435,7 @@ PQ2: "슬라이드 생성에 사용할 도구를 선택하세요."
 ```
 "자동 설정을 확인하세요. 조정이 필요하면 선택하세요."
 [자동 설정 요약]
-- 정보 밀도(PQ3): 유형별 적응형 밀도 (v4 기준 — concept 20-30줄, code 25-35줄, comparison 20-30줄 등)
+- 정보 밀도(PQ3): 유형별 적응형 밀도 (concept 15-25줄, code 25-35줄, comparison 20-30줄 등)
 - ...기타 자동값...
 
 1. 자동 설정 그대로 진행 (추천)

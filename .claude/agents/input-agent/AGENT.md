@@ -394,18 +394,18 @@ PBL + AI-first, 실습 비율 50% 이상
 3. `06_write_lecture_script.md` 상단 (코스 레벨 메타데이터)
 4. `02_script/01_input_data.json` → `01_outline/01_input_data.json` (보조 JSON)
 
-**콘텐츠 유형 자동 탐지** → `derived` 필드에 기록:
-- `has_code_content`: 코드 워크스루, 라이브 코딩, 코드 리뷰 활동 존재 여부
-- `has_activity_content`: 실습, 그룹활동, 프로젝트 활동 존재 여부
-- `has_quiz_content`: 형성평가, 퀴즈 활동 존재 여부
+**콘텐츠 유형 자동 탐지** → `derived` 필드에 기록 (세션 파일 내 키워드 매칭):
+- `has_code_content`: "코드", "코딩", "라이브 코딩", "코드 워크스루", "코드 리뷰", "프로그래밍", "구현", "디버깅", "```" → 하나 이상 매칭 시 `true`
+- `has_activity_content`: "실습", "그룹 활동", "팀 활동", "프로젝트", "워크숍", "핸즈온", "hands-on", "협업 활동" → 하나 이상 매칭 시 `true`
+- `has_quiz_content`: "형성평가", "퀴즈", "확인 문제", "자가진단", "평가 문항" → 하나 이상 매칭 시 `true`
 
 **자동 추론 6개 항목** (이전 단계 산출물에서 결정적 파생):
 
 | # | 카테고리 | 추론 소스 | 추론 로직 |
 |---|---------|----------|----------|
 | PQ1 | 슬라이드 작성 범위 | `script_settings.target_scope` | 교안 작성 범위와 동기화 (교안이 없는 차시는 기획 불가) |
-| PQ3 | 정보 밀도 | 세션 콘텐츠 유형 분석 | 슬라이드 유형별 적응형 밀도 자동 결정 (concept 15-25줄, code 25-35줄 등) |
-| PQ5 | 디자인 톤 | `inherited.tone` 텍스트 | 키워드 매칭: 비유/친근→educational, 전문/기업→professional, 간결/미니멀→minimal, fallback→format.type 기반 |
+| PQ3 | 정보 밀도 | 세션 콘텐츠 유형 분석 | 유형별 적응형 밀도 자동 결정 — v4 기준: concept 20-30줄, code 25-35줄, comparison 20-30줄, data_insight 15-25줄, image 10-20줄, timeline 15-25줄, summary 15-25줄, activity 20-30줄, quiz 15-25줄, title 3-5줄, agenda 8-12줄, section_transition 3-5줄, quote 5-10줄. 전체 범위 3-35줄 |
+| PQ5 | 디자인 톤 | L3: 교안 메타데이터 `톤/스타일` → `inherited.tone` (primary), L4: `tone_examples` (보조) | 키워드 매칭: 비유/친근→educational, 전문/기업→professional, 간결/미니멀→minimal, fallback→format.type 기반 |
 | PQ6 | 발표자 노트 | 교안 워크플로우 특성 | 항상 `include = true` |
 | PQ7 | 코드 테마 | `derived.has_code_content` | 코드 존재 시 `dark` 자동 설정, 없으면 `applicable = false` |
 | PQ4 | Assertion-Evidence | A-E partial 기본 적용 | 적응형 밀도에서 partial이 최적이므로 기본값 `partial` |
@@ -435,7 +435,7 @@ PQ2: "슬라이드 생성에 사용할 도구를 선택하세요."
 ```
 "자동 설정을 확인하세요. 조정이 필요하면 선택하세요."
 [자동 설정 요약]
-- 정보 밀도(PQ3): 적응형 자동 결정 (concept 15-25줄, code 25-35줄 등)
+- 정보 밀도(PQ3): 유형별 적응형 밀도 (v4 기준 — concept 20-30줄, code 25-35줄, comparison 20-30줄 등)
 - ...기타 자동값...
 
 1. 자동 설정 그대로 진행 (추천)

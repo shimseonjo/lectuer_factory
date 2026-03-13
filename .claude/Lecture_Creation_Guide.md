@@ -697,6 +697,8 @@ Phase A→B 등 매크로 구조 전환점이 모듈 중간에 발생하면, 해
 
 **설계 근거**: 교안 Phase 6(차시별 작성)의 3계층 아키텍처(Micro-Meso-Macro)를 슬라이드 기획에 적응. 순차 작성, Visual Summary, 경량 자체 검증, Day 통합 패턴을 적용.
 
+**입력 4개**: `05_arch_slide_structure.md` + `01_input_data.json` + `03_brainstorm_result.md` + `{script_dir}/06_sessions/`
+
 **3계층 아키텍처**:
 
 | 계층 | 교안 대응 | Step | 핵심 작업 | 검증 |
@@ -705,21 +707,112 @@ Phase A→B 등 매크로 구조 전환점이 모듈 중간에 발생하면, 해
 | **Meso** (Day 단위) | 6c+6d | Step 2: `day_integrate` | Day 병합 + 시각 패턴 패치 + 전환 연결 | 일관성 검증 5항목 |
 | **Macro** (전체) | 7a+7b | Step 3: `final_integrate` | 전체 병합 + 코스 레벨 섹션 + SLO 매핑 | 6중 검증 |
 
-**세션별 작성 절차** (Step 1, 7단계): 컨텍스트 로드 → 도입 슬라이드(2-3장, Gagné 1-3) → 본론 슬라이드(유형별, Gagné 4-8) → 마무리 슬라이드(2-3장, Gagné 9) → 발표자 노트 보강(5항목) → 자체 검증 → Visual Summary 갱신
+**분할 전략 (규모별 동작 모드)**:
 
-**슬라이드별 9필드**: 유형, Assertion Headline, 콘텐츠 구성(≤3 핵심 요소), 시각 자료(30-40%), 레이아웃, 발표자 노트(5항목: 핵심포인트+보충설명+전환멘트+교수자행동+타이밍큐), 시간, SLO, 교안 매핑
+| 총 세션 수 | 모드 | Micro (Step 1) | Meso (Step 2) | Macro (Step 3) | 산출물 구조 |
+|-----------|------|--------------|-------------|-------------|-----------|
+| ≤10 | 단일 | 세션별 순차 (단일 draft 내 섹션) | **생략** — 크로스-세션 일관성 검증 5항목만 | 최종 정제 + 6중 검증 | `_visual_summary.md` + `06_write_slide_plan_draft.md` + `06_write_slide_plan.md` |
+| 11-20 | 2계층 | 세션별 순차 (단일 draft) | Day 통합 (draft 내 Day 섹션) | 최종 정제 + 6중 검증 | 동일 |
+| 21+ | 3계층 full | 세션별 파일 (`06_session_plans/`) | Day별 파일 (`06_day_plans/`) | 전체 병합 + 코스 레벨 섹션 | `06_session_plans/` + `06_day_plans/` + `06_write_slide_plan.md` |
+
+**Step 0 — 컨텍스트 로드 + 작성 전략 수립** (5개 동작):
+- 0-A: `05_arch_slide_structure.md` 전체 로드 — §2 세션별 시퀀스(유형·순서·시간·SLO·레이아웃·Gagné), §4 검증 결과, §1 세션 유형
+- 0-B: `03_brainstorm_result.md`에서 시각화 전략 추출 — §2 유형별 시각화, §3 세션별 계획, §5 코드 전략(조건부), §7 색상/아이콘, §8 크로스-세션 일관성
+- 0-C: 분할 모드 결정 — `total_sessions` 기반 (≤10 / 11-20 / 21+), 3계층 full 시 디렉토리 생성
+- 0-D: Visual Summary 초기화 — `_visual_summary.md` 생성 (글로벌 설정: 도구, 디자인 톤, 코드 테마, A-E 수준)
+- 0-E: 도구별 레이아웃 제약 확인 — Marp(2열·이미지 배경, 복잡 그리드 불가), Slidev(2열·그리드·Vue), Gamma(블록 자유), reveal.js(HTML/CSS 자유)
+
+**Step 1 — 세션별 슬라이드 기획 (`session_plan` 모드)**:
+
+세션별 작성 절차 (7단계): ①컨텍스트 로드(arch §2 + 교안 + brainstorm §3 + Visual Summary) → ②도입 슬라이드 기획(2-3장: title + agenda + 선수지식 확인[`has_quiz_content=true` 시], Gagné 1-3) → ③본론 슬라이드 기획(유형별 상세, Gagné 4-8, 1아이디어/1슬라이드, Rule of Three ≤3) → ④마무리 슬라이드 기획(2-3장: summary + Exit Ticket[`formative_assessment.type≠none` 시] + 예고, Gagné 9) → ⑤발표자 노트 보강(5항목) → ⑥자체 검증(4항목) → ⑦Visual Summary 갱신
+
+슬라이드별 9필드:
+
+| 필드 | 설명 | 작성 가이드 |
+|------|------|-----------|
+| 유형 | 13가지 중 선택 | arch §2에서 결정됨 |
+| Assertion Headline | 완전한 주장 문장 | A-E partial: "~이다", "~한다" (아래 A-E 규칙 참조) |
+| 콘텐츠 구성 | 핵심 내용 요소 | 불릿 3-5개, 핵심 요소 ≤3 (Rule of Three) |
+| 시각 자료 | 시각 증거 설명 | brainstorm §2 반영, 30-40% 시각 증거 |
+| 레이아웃 | 배치 패턴 | 도구 제약 내, arch §6 매핑 참조 |
+| 발표자 노트 | 교수자 지원 정보 | 5항목 (핵심포인트·보충설명·전환멘트·교수자행동·타이밍큐) |
+| 시간 | 분 | 유형별 범위 내 |
+| SLO | 관련 학습 목표 | arch §2 매핑 |
+| 교안 매핑 | 교안 섹션 참조 | 세션 N의 도입/전개/정리 중 어디에서 파생 |
+
+Assertion Headline 작성 규칙 — 유형별 A-E 적용:
+
+| 유형 | A-E | Headline 형식 |
+|------|-----|-------------|
+| concept | ✅ partial | 주장 문장 — "~이다", "~한다" |
+| comparison | ✅ partial | 비교 결론 — "A가 B보다 ~하다" |
+| data_insight | ✅ partial | 데이터 해석 — "~를 보여준다" |
+| image | ✅ partial | 시각 해석 — "~를 보여준다" |
+| code | 변형 | 핵심 원리 — "~로 구현한다" |
+| summary | 변형 | 핵심 메시지 — "~가 핵심이다" |
+| timeline | 변형 | 시간적 주장 — "~에서 ~로 발전했다" |
+| activity | 변형 | 활동 목표 — "~를 실습한다" |
+| title, agenda, section_transition, quiz, quote | — | 일반 제목/질문/인용 (A-E 불필요) |
+
+발표자 노트 5항목:
+
+| # | 항목 | 내용 |
+|---|------|------|
+| 1 | 핵심 포인트 | 반드시 전달할 메시지 (1-2문장) |
+| 2 | 보충 설명 | 슬라이드에 없지만 구두로 보충할 내용 |
+| 3 | 전환 멘트 | 다음 슬라이드로 넘어갈 연결 문장 (3유형: 개념 연결·질문 전환·시각 전환) |
+| 4 | 교수자 행동 | 시연, 질문, 대기 등 물리적 행동 지시 |
+| 5 | 타이밍 큐 | `[N분/누적 M분] 설명 X분 + 질문 Y분` 형식 |
+
+세션별 자체 검증 (4항목) — FAIL 시 해당 슬라이드만 1회 수정, 2차 FAIL → 경고 기록(`[WARN]`) 후 진행:
+
+| # | 검증 | 기준 | FAIL 처리 |
+|---|------|------|---------|
+| V1 | 밀도 범위 | 콘텐츠 항목 수 ≤ 유형별 밀도 범위, 핵심 요소 ≤3 | 항목 추가/삭제 |
+| V2 | 시간 합산 | 슬라이드 시간 합 ≈ session_minutes - activity_time (±3분) | 시간 재배분 |
+| V3 | SLO 커버리지 | 대상 SLO 전체가 최소 1개 슬라이드에 매핑 | 슬라이드 추가/매핑 |
+| V4 | Assertion 품질 | partial 유형의 Headline이 완전한 주장 문장 (키워드·질문 금지) | Headline 재작성 |
+
+**session_revise 모드**: 자체 검증 FAIL 또는 Step 2 Day 통합에서 특정 세션 수정 필요 시 — FAIL 항목만 수정, 나머지 유지, 자체 검증 4항목 재실행
+
+**Context7 조회 프로토콜** (조건부): `has_code_content=true` AND code 유형 슬라이드 시 → ①`resolve-library-id` → ②`get-library-docs(tokens=3000)` → ③슬라이드 반영 + 출처 기록 `[C7] {라이브러리명}`. 세션당 최대 1회, 기술 코드/API 전용 (교수법·시각화 금지)
 
 **Visual Summary** — 교안 Running Summary에 대응:
-- 매 세션 완료 후 `_visual_summary.md`에 append (레이아웃 빈도, 유형 분포, Assertion 톤, 시각 요소, 전환 상태)
+- 매 세션 완료 후 `_visual_summary.md`에 append — 5항목: 레이아웃 빈도, 유형 분포, Assertion 톤(마지막 3개 Headline), 시각 요소, 전환 상태
 - Day 통합(Step 2) 시 Day 수준 요약으로 리셋 (누적 오차 방지)
 - 이전 세션 전체를 다시 읽지 않고 Visual Summary만으로 시각 맥락 유지
 
-**분할 전략**:
-- ≤10세션 단일: Step 2 Day 통합 생략, 크로스-세션 검증만
-- 11-20 2계층: 세션별 순차 + Day 통합
-- 21+ 3계층 full: 세션별 파일(`06_session_plans/`) + Day 파일(`06_day_plans/`) + 최종 통합
+**Step 2 — Day 통합 (`day_integrate` 모드)** — ≤10세션 시 생략(크로스-세션 일관성 검증 5항목만):
+- 발동: 해당 Day 모든 세션 Step 1 완료 후 자동
+- 0\. 사전 검증 [MANDATORY]: 세션 기획 파일 존재 확인, 누락 시 **즉시 중단** → 누락 세션 목록 반환
+- 1\. 병합: Day 내 세션 순서대로 결합 + Day 헤더 삽입
+- 2\. 시각 패턴 일관성 패치: 동일 유형 레이아웃 통일, 색상/아이콘 스타일, 메타포 중복 제거, design_tone 확인
+- 3\. 전환 슬라이드 연결: `section_transition`의 내러티브 확인, 부자연스러운 전환 멘트 재작성
+- 4\. 일관성 검증 5항목: C1(레이아웃 일관) + C2(시각 패턴 일관) + C3(Assertion 톤 일관) + C4(전환 연결성) + C5(시간 배분 Day 내 ±5분) — 위반 시 직접 수정
+- 5\. Visual Summary 리셋: Day 수준 요약으로 갱신
 
-**Context7 조회**: `has_code_content=true` AND code 유형 슬라이드 존재 시, 세션당 최대 1회 코드 정확성 검증
+**Step 3 — 최종 통합 (`final_integrate` 모드)**:
+- 발동: 모든 Day 통합 완료 후 (≤10세션: Step 1 + 크로스-세션 검증 완료 후)
+- 1\. 코스 레벨 섹션 작성: 메타데이터 테이블(slide-plan-template.md) + 슬라이드 유형 범례(13유형) + 설계 개요(1-2문단)
+- 2\. Day 병합: 모든 Day 순서대로 + Day-세션 계층 구조 유지
+- 3\. SLO-슬라이드 매핑 매트릭스: 전체 SLO × 세션 × 슬라이드 유형 × Bloom's 크로스 테이블 + COVERED/MISSING 상태
+- 4\. 세션 간 전환 테이블: From→To, 전환 유형(주제 연결/쉬는 시간/Day 전환/Phase 전환), 연결 요소
+- 5\. 설계 결정 로그: 주요 결정 + 근거 + 대안 + 카테고리(V=시각, S=구조, D=밀도, T=도구)
+- 6\. 6중 검증 실행:
+
+| # | 검증 | 기준 | FAIL 처리 | 조건부 SKIP |
+|---|------|------|---------|-----------|
+| 1 | 슬라이드 수 | 세션별 보정 범위 이탈 30% 초과 | 슬라이드 추가/삭제 | — |
+| 2 | 시간 합산 | 세션별 ±5분 | 시간 재배분 | — |
+| 3 | 밀도 호환 | 유형별 밀도 범위 내 | 콘텐츠 조정 | `has_code=false` 시 code 밀도 SKIP |
+| 4 | SLO 커버리지 | 전체 SLO 90%+ 매핑 | 슬라이드 추가/매핑 | — |
+| 5 | 인지 부하 | 동일 유형 3장 연속 금지, 15-20분마다 전환 | 유형 교차 삽입 | 총 슬라이드 ≤10 시 SKIP |
+| 6 | 내러티브 연속성 | Assertion Headline 논리적 흐름 | Headline 재작성 | `assertion_evidence=none` 시 SKIP |
+
+**수정 모드** (Phase 5 REVISE 후속):
+- `07_review_quality.md`의 Phase 4 수정 지시만 반영, 지적된 슬라이드만 수정 (Surgical Changes), `06_write_slide_plan.md` 직접 수정, 수정 후 6중 검증 재실행
+- 수정 가능 8항목: Assertion 품질, 시각 자료, 밀도 범위, 발표자 노트, 레이아웃 비일관, 전환 멘트, SLO 미커버, 인지 부하 과다
+- **APPROVED WITH NOTES 경량 수정**: P3(Suggestion) 항목만 반영, 6중 검증·재검토 불필요
 
 상세 워크플로우: `.claude/agents/writer-agent/AGENT.md`의 "슬라이드 기획 기획안 작성 (Phase 4) 세부 워크플로우" 섹션 참조
 

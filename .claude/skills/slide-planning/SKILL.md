@@ -37,11 +37,11 @@ $ARGUMENTS
 
 ### Phase 3: 구조 설계 → architecture-agent
 
-**지시**: 브레인스토밍 결과를 기반으로 세션별 슬라이드 구조(수, 유형, 순서, 시간)를 설계하세요.
+**지시**: 브레인스토밍 결과를 기반으로 세션별 슬라이드 구조(수, 유형, 순서, 시간, 레이아웃)를 설계하세요.
 **입력 파일**: `{output_dir}/01_input_data.json`, `{output_dir}/03_brainstorm_result.md`, `{outline_dir}/05_arch_architecture.md`, `{script_dir}/06_sessions/`
 **산출물 위치**: `{output_dir}/05_arch_slide_structure.md`
-**적응형 슬라이드 수**: 세션 유형별 범위 — 개념 13-20장, 코드 10-15장, 실습 8-13장, 프로젝트 8-13장, 혼합 10-15장
-**워크플로우**: Step 0(컨텍스트+예산산출) → Step 1(Backward Design: 슬라이드 스토리+SLO매핑) → Step 2(시퀀스 설계) → Step 3(4중 검증: 슬라이드수+시간합산+밀도호환+SLO커버리지)
+**적응형 슬라이드 수**: 세션 유형별 범위 — 개념 13-20장, 코드 10-15장, 실습 8-13장, 프로젝트 8-13장, 혼합 10-15장 (교수 모델별 보정 계수 적용)
+**워크플로우**: Step 0(12필드 추출+상속 범위+세션 유형+도구 카탈로그+조건부 분기+예산 공식+brainstorm §별 매핑) → Step 1(Backward Design: SLO→유형+Gagné→위치+3-소스 통합) → Step 2(세션 유형별 시퀀스 템플릿+7규칙 시퀀싱+시간 배분+도구별 레이아웃 배정) → Step 3(6중 검증: 슬라이드수+시간합산+밀도호환+SLO커버리지+인지부하+내러티브 연속성, 조건부 SKIP 3개)
 **상세**: `.claude/agents/architecture-agent/AGENT.md`의 "슬라이드 기획 구조 설계" 섹션 참조
 
 ### Phase 4: 기획안 작성 → writer-agent
@@ -116,7 +116,7 @@ revision_count = 0
 **architecture-agent 수정 모드**:
 ```
 지시: 07_review_quality.md §6-2의 Phase 3 수정 지시를 반영하여 05_arch_slide_structure.md를 수정하세요.
-규칙: (1) 지적된 구조적 문제만 수정 (2) 4중 검증 재실행 (3) 05_arch_slide_structure.md 덮어쓰기
+규칙: (1) 지적된 구조적 문제만 수정 (2) 6중 검증 재실행 (3) 05_arch_slide_structure.md 덮어쓰기
 입력: 07_review_quality.md, 05_arch_slide_structure.md, 01_input_data.json, 03_brainstorm_result.md
 ```
 

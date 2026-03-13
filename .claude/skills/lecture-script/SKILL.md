@@ -373,12 +373,17 @@ revision_count = 0
 lectures/YYYY-MM-DD_{강의명}/02_script/
 ├── 01_input_data.json              # Phase 1: 구성안 로드 + 교안 설정
 ├── 02_explore_plan.md             # Phase 2: 탐색적 리서치 계획
-├── 02_explore_research.md         # Phase 2: 리서치 결과
+├── 02_explore_local.md            # Phase 2: 로컬 참고자료 분석
+├── 02_explore_nblm.md             # Phase 2: NotebookLM 쿼리 결과
+├── 02_explore_web.md              # Phase 2: 인터넷 리서치 결과
+├── 02_explore_research.md         # Phase 2: 리서치 결과 통합
 ├── 03_brainstorm_divergent.md    # Phase 3: 발산적 탐색 (Step 1)
 ├── 03_brainstorm_convergent.md   # Phase 3: 수렴 및 매핑 (Step 2)
 ├── 03_brainstorm_review.md       # Phase 3: 다관점 검증 (Step 3)
 ├── 03_brainstorm_result.md        # Phase 3: 브레인스토밍 최종 통합 ★ (Step 4)
 ├── 04_deep_plan.md                # Phase 4: 심화 리서치 계획
+├── 04_deep_local_nblm.md          # Phase 4: 로컬/NBLM 심화 재분석
+├── 04_deep_web.md                 # Phase 4: 웹 심화 수집
 ├── 04_deep_research.md            # Phase 4: 심화 리서치 최종 ★
 ├── 05_arch_lesson_plan.md         # Phase 5: 차시별 레슨 플랜 구조 설계
 ├── _running_summary.md            # Phase 6: 누적 요약 (차시·모듈 작성 시 갱신)

@@ -555,7 +555,7 @@ Phase A→B 등 매크로 구조 전환점이 모듈 중간에 발생하면, 해
 | 1 | 입력 수집 | input-agent | 교안 4계층 로드(아키텍처+세션+통합본+JSON), 자동 추론 6개 + 사용자 질문 1개(도구) |
 | 2 | 브레인스토밍 | brainstorm-agent | 조건부 3~5축 발산(유형별 시각화·메타포·코드·활동퀴즈·레이아웃), 4기준 가중 수렴(밀도·시각계층·인지부하·도구호환), A-E/도구 호환 매핑, 3역할 다관점 검증(시각 디자인 회의론자·청중 대리인·슬라이드 정렬 중재자), 11섹션 최종 통합 |
 | 3 | 구조 설계 | architecture-agent | 12필드 추출+상속 범위 정의, 세션 유형 분류(교수 모델 보정), 도구별 레이아웃 카탈로그(Marp/Slidev/reveal.js/Gamma), 7조건 분기, 예산 공식, brainstorm §별 매핑, SLO→유형+Gagné→위치+3-소스 통합, 세션 유형별 시퀀스 템플릿+7규칙 시퀀싱+레이아웃 배정, 6중 검증(슬라이드수+시간+밀도+SLO+인지부하+내러티브, 조건부 SKIP) |
-| 4 | 기획안 작성 | writer-agent | 슬라이드별 Assertion Headline/레이아웃/콘텐츠/시각자료/발표자 노트 |
+| 4 | 기획안 작성 | writer-agent | 3계층(Micro-Meso-Macro) 세션별 순차 작성, 슬라이드별 9필드(Assertion Headline/콘텐츠/시각자료/레이아웃/발표자 노트 5항목/시간/SLO/교안매핑), Visual Summary, 자체 검증 4항목, Day 통합, 6중 검증 |
 | 5 | 품질 검토 | review-agent | 정보 밀도, 시각 계층, 학습목표 정렬, 슬라이드 수 적절성 |
 
 **설계 원칙**:
@@ -691,6 +691,38 @@ Phase A→B 등 매크로 구조 전환점이 모듈 중간에 발생하면, 해
 
 상세 워크플로우: `.claude/agents/architecture-agent/AGENT.md`의 "슬라이드 기획 구조 설계 (Phase 3) 세부 워크플로우" 섹션 참조
 
+#### Phase 4: 기획안 작성 상세
+
+**핵심 전환**: 구성안 "어떤 차시에 무엇을 가르칠까"(코스 레벨) → 교안 "각 차시 안에서 어떻게 가르칠까"(레슨 레벨) → 구조 설계 "몇 장의 어떤 슬라이드로 전달할까"(프레젠테이션 레벨) → 기획안 작성 **"각 슬라이드에 무엇을 넣고 어떻게 배치할까"**(슬라이드 레벨)
+
+**설계 근거**: 교안 Phase 6(차시별 작성)의 3계층 아키텍처(Micro-Meso-Macro)를 슬라이드 기획에 적응. 순차 작성, Visual Summary, 경량 자체 검증, Day 통합 패턴을 적용.
+
+**3계층 아키텍처**:
+
+| 계층 | 교안 대응 | Step | 핵심 작업 | 검증 |
+|------|---------|------|---------|------|
+| **Micro** (세션 단위) | 6a+6b | Step 1: `session_plan` | 1세션씩 순차 작성 + 직전 세션 참조 | 자체 검증 4항목 (밀도·시간·SLO·Assertion) |
+| **Meso** (Day 단위) | 6c+6d | Step 2: `day_integrate` | Day 병합 + 시각 패턴 패치 + 전환 연결 | 일관성 검증 5항목 |
+| **Macro** (전체) | 7a+7b | Step 3: `final_integrate` | 전체 병합 + 코스 레벨 섹션 + SLO 매핑 | 6중 검증 |
+
+**세션별 작성 절차** (Step 1, 7단계): 컨텍스트 로드 → 도입 슬라이드(2-3장, Gagné 1-3) → 본론 슬라이드(유형별, Gagné 4-8) → 마무리 슬라이드(2-3장, Gagné 9) → 발표자 노트 보강(5항목) → 자체 검증 → Visual Summary 갱신
+
+**슬라이드별 9필드**: 유형, Assertion Headline, 콘텐츠 구성(≤3 핵심 요소), 시각 자료(30-40%), 레이아웃, 발표자 노트(5항목: 핵심포인트+보충설명+전환멘트+교수자행동+타이밍큐), 시간, SLO, 교안 매핑
+
+**Visual Summary** — 교안 Running Summary에 대응:
+- 매 세션 완료 후 `_visual_summary.md`에 append (레이아웃 빈도, 유형 분포, Assertion 톤, 시각 요소, 전환 상태)
+- Day 통합(Step 2) 시 Day 수준 요약으로 리셋 (누적 오차 방지)
+- 이전 세션 전체를 다시 읽지 않고 Visual Summary만으로 시각 맥락 유지
+
+**분할 전략**:
+- ≤10세션 단일: Step 2 Day 통합 생략, 크로스-세션 검증만
+- 11-20 2계층: 세션별 순차 + Day 통합
+- 21+ 3계층 full: 세션별 파일(`06_session_plans/`) + Day 파일(`06_day_plans/`) + 최종 통합
+
+**Context7 조회**: `has_code_content=true` AND code 유형 슬라이드 존재 시, 세션당 최대 1회 코드 정확성 검증
+
+상세 워크플로우: `.claude/agents/writer-agent/AGENT.md`의 "슬라이드 기획 기획안 작성 (Phase 4) 세부 워크플로우" 섹션 참조
+
 **데이터 흐름**:
 ```
 교안 4계층 로드 → 01_input_data.json → 03_brainstorm_result.md
@@ -811,8 +843,17 @@ lectures/
     │   ├── 01_input_data.json                   # Phase 1: 교안 로드 + 도구/밀도 설정
     │   ├── 03_brainstorm_divergent.md           # Phase 2: 시각화 아이디어 발산 (중간)
     │   ├── 03_brainstorm_convergent.md          # Phase 2: 수렴·패턴 매핑 (중간)
+    │   ├── 03_brainstorm_review.md              # Phase 2: 다관점 검증 (중간)
     │   ├── 03_brainstorm_result.md              # Phase 2: 브레인스토밍 최종 ★
     │   ├── 05_arch_slide_structure.md           # Phase 3: 슬라이드 구조 설계
+    │   ├── _visual_summary.md                   # Phase 4: Visual Summary (작성 중 갱신)
+    │   ├── 06_session_plans/                    # Phase 4: 세션별 기획 [21+세션 시]
+    │   │   ├── 06_session_plan_001.md
+    │   │   └── ...
+    │   ├── 06_day_plans/                        # Phase 4: Day 통합 [21+세션 시]
+    │   │   ├── 06_day_plan_01.md
+    │   │   └── ...
+    │   ├── 06_write_slide_plan_draft.md         # Phase 4: 기획안 초안 [≤20세션 시] (중간)
     │   ├── 06_write_slide_plan.md               # Phase 4: 최종 기획안 ★
     │   └── 07_review_quality.md                 # Phase 5: 품질 검토
     └── 04_slides/                            # /slide-generation 산출물

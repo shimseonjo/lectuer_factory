@@ -46,13 +46,18 @@ $ARGUMENTS
 
 ### Phase 4: 기획안 작성 → writer-agent
 
-**지시**: 구조 설계와 시각화 전략을 통합하여 최종 슬라이드 기획안을 작성하세요.
+**지시**: 구조 설계와 시각화 전략을 통합하여 최종 슬라이드 기획안을 작성하세요. **3계층 아키텍처**(Micro-Meso-Macro)로 세션별 순차 작성 → Day 통합 → 최종 통합을 수행합니다.
 **입력 파일**: `{output_dir}/05_arch_slide_structure.md`, `{output_dir}/01_input_data.json`, `{output_dir}/03_brainstorm_result.md`, `{script_dir}/06_sessions/`
 **템플릿**: `.claude/templates/slide-plan-template.md`
-**산출물 위치**: `{output_dir}/` (06_write_slide_plan_draft.md, 06_write_slide_plan.md)
-**슬라이드별 상세**: Assertion Headline, 콘텐츠 구성, 시각 자료, 레이아웃, 발표자 노트(4항목), 시간, SLO, 교안 매핑
-**분할 기준**: ≤10세션 단일, 11-20 2분할, 21+ 3분할
-**워크플로우**: Step 0(컨텍스트+작성전략) → Step 1(세션별 슬라이드 기획) → Step 2(크로스-세션 일관성) → Step 3(최종 정제+3중 검증)
+**산출물 위치**: `{output_dir}/` (`_visual_summary.md`, 06_write_slide_plan_draft.md, 06_write_slide_plan.md; 21+세션 시 `06_session_plans/`, `06_day_plans/` 추가)
+**슬라이드별 상세**: Assertion Headline, 콘텐츠 구성, 시각 자료, 레이아웃, 발표자 노트(5항목: 핵심포인트+보충설명+전환멘트+교수자행동+타이밍큐), 시간, SLO, 교안 매핑
+**분할 기준**: ≤10세션 단일(Step 2 Day 통합 생략), 11-20 2계층, 21+ 3계층 full(세션별·Day별 파일 생성)
+**워크플로우**:
+- Step 0: 컨텍스트 로드 + Visual Summary 초기화 + 분할 모드 결정
+- Step 1 (Micro, `session_plan`): 1세션씩 순차 작성 → 자체 검증 4항목(밀도·시간·SLO·Assertion) → FAIL 시 1회 재작성 → Visual Summary 갱신
+- Step 2 (Meso, `day_integrate`): Day 내 세션 병합 + 시각 패턴 일관성 패치 + 전환 슬라이드 연결 + 일관성 검증 5항목 + Visual Summary 리셋
+- Step 3 (Macro, `final_integrate`): 전체 병합 + 코스 레벨 섹션 + SLO 매핑 매트릭스 + 6중 검증
+**Context7**: `has_code_content=true` 시 code 유형 슬라이드의 코드 정확성 검증 (세션당 최대 1회)
 **상세**: `.claude/agents/writer-agent/AGENT.md`의 "슬라이드 기획 기획안 작성" 섹션 참조
 
 ### Phase 5: 품질 검토 → review-agent
@@ -148,7 +153,14 @@ lectures/YYYY-MM-DD_{강의명}/03_slide_plan/
 ├── 03_brainstorm_review.md          # Phase 2: 다관점 검증 (중간)
 ├── 03_brainstorm_result.md          # Phase 2: 브레인스토밍 최종 ★
 ├── 05_arch_slide_structure.md       # Phase 3: 슬라이드 구조 설계
-├── 06_write_slide_plan_draft.md     # Phase 4: 기획안 초안 (중간)
+├── _visual_summary.md               # Phase 4: Visual Summary (작성 중 갱신)
+├── 06_session_plans/                 # Phase 4: 세션별 기획 [21+세션 시]
+│   ├── 06_session_plan_001.md
+│   └── ...
+├── 06_day_plans/                     # Phase 4: Day 통합 [21+세션 시]
+│   ├── 06_day_plan_01.md
+│   └── ...
+├── 06_write_slide_plan_draft.md     # Phase 4: 기획안 초안 [≤20세션 시] (중간)
 ├── 06_write_slide_plan.md           # Phase 4: 최종 기획안 ★
 └── 07_review_quality.md             # Phase 5: 품질 검토
 ```

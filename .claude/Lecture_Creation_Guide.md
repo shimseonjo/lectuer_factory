@@ -651,6 +651,46 @@ Phase A→B 등 매크로 구조 전환점이 모듈 중간에 발생하면, 해
 
 상세 워크플로우: `.claude/agents/brainstorm-agent/AGENT.md`의 "슬라이드 기획 브레인스토밍 (Phase 2) 세부 워크플로우" 섹션 참조
 
+#### Phase 3: 구조 설계 상세
+
+**핵심 전환**: 구성안 "어떤 차시에 무엇을 가르칠까"(코스 레벨) → 교안 "각 차시 안에서 어떻게 가르칠까"(레슨 레벨) → 슬라이드 기획 **"각 세션을 몇 장의 어떤 슬라이드로 전달할까"**(프레젠테이션 레벨)
+
+**상속 vs 신규 설계**:
+- **상속** (교안에서 그대로 사용): SLO 목록+Bloom's 수준, 매크로 구조(Phase A→B→C→D), 정렬 맵(SLO↔활동↔평가), 세션별 주제·활동·형성평가
+- **신규 설계**: 슬라이드 수(세션별), 유형 배정, 순서(시퀀스), 슬라이드별 시간, 도구별 레이아웃, Assertion Headline 초안
+
+**입력 4개**: `03_slide_plan/01_input_data.json` + `03_slide_plan/03_brainstorm_result.md` + `01_outline/05_arch_architecture.md` + `02_script/06_sessions/`
+
+**4단계 워크플로우**: Step 0(컨텍스트 로드+슬라이드 예산 산출) → Step 1(Backward Design — 슬라이드 스토리 설계) → Step 2(슬라이드 시퀀스 설계) → Step 3(6중 검증 + 산출물 작성)
+
+**Step 0 — 컨텍스트 로드 + 슬라이드 예산 산출 (7개 서브섹션)**:
+- 0-A: 12필드 추출 (`slide_settings` 4개 + `inherited` 5개 + `derived` 3개)
+- 0-B: 상속 범위 정의 — 상속 5항목(SLO, 매크로 구조, 정렬 맵, 주제·키워드, 활동·형성평가) vs 신규 6항목(슬라이드 수, 유형 배정, 순서, 시간, 레이아웃, Headline 초안) 명시적 구분
+- 0-C: 세션 유형 분류 — 5유형(개념/코드/실습/프로젝트/혼합) + 교수 모델 보정 계수(DI ×1.0, PBL ×0.7, Flipped ×0.5, Mixed ×0.85)
+- 0-D: 도구별 레이아웃 카탈로그 — Marp 7종, Slidev 12종(19종 중 주요 매핑), reveal.js 6종, Gamma 6종(블록 기반)
+- 0-E: 조건부 분기 결정 — 7개 조건(`tool`, `has_code`, `has_activity`, `has_quiz`, `assertion_evidence`, `design_tone`, `teaching_model`)이 후속 Step 동작 결정
+- 0-F: 슬라이드 예산 공식 — `실질_노출_시간 = session_minutes - activity_time - 5분` → `권장_슬라이드_수 = 실질_노출_시간 ÷ 평균_시간_per_장` → 교수모델 보정 → clamp(세션유형 최소~최대)
+- 0-G: 브레인스토밍 결과(§1-§11) 섹션별 매핑 — 각 섹션을 Step 1~3의 구체 입력으로 분배(§2→유형 시각화, §3→세션별 시퀀스, §5→코드 레이아웃, §8→내러티브 검증 등)
+
+**Step 1 — Backward Design: 슬라이드 스토리 설계 (3개 서브섹션)**:
+- 1-A: SLO→슬라이드 유형 매핑 — Bloom's 6수준별 주/보조 유형 매핑 (기억→concept, 이해→concept/comparison, 적용→code/activity, 분석→comparison/data_insight, 평가→comparison/quiz, 창조→activity/code). 모든 SLO가 최소 1개 '주' 유형에 커버 필수
+- 1-B: Gagné 9사태→슬라이드 위치 매핑 — 도입(사태 1·2·3, 3-4장) → 전개(사태 4·5·6·7·8, 본론 장수) → 정리(사태 9, 2-3장). `has_quiz=false` 시 사태 3·8의 quiz를 concept/activity 대체
+- 1-C: 3-소스 통합 — ①brainstorm §3+§9(최우선, 검증된 시각화 전략) → ②도구 카탈로그(구현 제약) → ③SLO+Gagné 기본값(fallback). 인지부하 관리: 1아이디어/장, 15-20분마다 유형 전환, Mayer 분절 원칙
+
+**Step 2 — 슬라이드 시퀀스 설계 (4개 서브섹션)**:
+- 2-A: 세션 유형별 시퀀스 템플릿 — 5유형(개념/코드/실습/프로젝트/혼합) 각각의 기본 슬라이드 순서 패턴 정의 + brainstorm §3·§6으로 커스터마이즈
+- 2-B: 시퀀싱 규칙 7개 — R1(도입: title→agenda→선수지식), R2(본론: concept→시각→activity→체크 자유 구성), R3(마무리: summary→Exit Ticket→예고), R4(동일 유형 3장 연속 금지), R5(concept 2장 후 시각적 유형 삽입), R6(15-20분 인지부하 전환 간격), R7(Assertion Headline 내러티브 연속성)
+- 2-C: 시간 배분 — 유형별 시간 범위(title 1-2분, concept 3-5분, code 4-5분, activity 표시만 등) + 시간 예산 검증(슬라이드+활동+전환 ≈ session_minutes, ±5분 허용) + 초과/부족 시 조정 우선순위
+- 2-D: 도구별 레이아웃 배정 — ①유형→카탈로그 후보 추출 → ②brainstorm §2/§5/§7 권장 우선 적용 → ③기본 레이아웃 배정 → ④`design_tone` 보정(educational/professional/minimal)
+
+**Step 3 — 6중 검증 + 산출물 작성 (2개 서브섹션)**:
+- 3-A: 6중 검증 — ①슬라이드 수(보정 범위 이탈 30% 초과→FAIL) ②시간 합산(±5분 오차) ③밀도 호환(조건부 SKIP: `has_code=false` 시 코드 밀도 건너뜀) ④SLO 커버리지(<90%→FAIL) ⑤인지부하(조건부 SKIP: 총 슬라이드 ≤10) ⑥내러티브 연속성(조건부 SKIP: `assertion_evidence=none`)
+- 3-B: 산출물 `05_arch_slide_structure.md` — 7섹션 구조: §1 세션 유형 분류, §2 세션별 슬라이드 시퀀스(유형·Headline·시간·SLO·교안 매핑·레이아웃·Gagné), §3 SLO-슬라이드 매핑, §4 검증 결과(6항목), §5 설계 결정 로그, §6 도구별 레이아웃 매핑, §7 인지부하 관리 맵
+
+**수정 모드** (Phase 5 REVISE 후속): 수정 가능 7항목(슬라이드 수/시퀀스/SLO 매핑/시간/유형 다양성/레이아웃/인지부하 전환) vs 수정 불가 4항목(SLO 변경/세션 추가삭제/교수 모델/슬라이드 도구). 수정 후 6중 검증 재실행 필수.
+
+상세 워크플로우: `.claude/agents/architecture-agent/AGENT.md`의 "슬라이드 기획 구조 설계 (Phase 3) 세부 워크플로우" 섹션 참조
+
 **데이터 흐름**:
 ```
 교안 4계층 로드 → 01_input_data.json → 03_brainstorm_result.md

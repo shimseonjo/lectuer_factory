@@ -198,6 +198,11 @@ for module in modules:
             Agent → review-agent (session_review 모드)  # 2차 검토
             IF 2차 FAIL: log_warning → 모듈 검토에서 처리
 
+    # === Phase 6 게이트: 세션 파일 존재 검증 [MANDATORY] ===
+    expected = [f"06_sessions/06_session_{s:03d}.md" for s in module.sessions]
+    for f in expected:
+        ASSERT exists(f), f"FATAL: {f} 미생성 — Phase 6a 스킵 감지. 해당 차시 6a부터 실행하세요."
+
     # === Phase 6c: 모듈 통합 ===
     Agent → writer-agent (module_integrate 모드)
       입력: 06_session_{*}.md (해당 모듈 차시들),
@@ -219,7 +224,9 @@ for module in modules:
           입력: 06_module_{NN}.md, module_review_feedback
 ```
 
-#### Phase 6a: 차시별 교안 작성 → writer-agent (session_write 모드)
+#### Phase 6a: 차시별 교안 작성 → writer-agent (session_write 모드) [MANDATORY]
+
+> **[MANDATORY]** 모든 차시는 반드시 개별 세션 파일(`06_session_{NNN}.md`)로 작성해야 한다. 모듈 통합(6c)에서 직접 작성하는 것은 금지. 이 단계를 건너뛰면 Phase 6c 사전조건 검증에서 실패한다.
 
 **산출물**: `{output_dir}/06_sessions/06_session_{NNN}.md` (예: 06_session_001.md)
 **작성 범위**: 정확히 1개 차시. script-template.md의 차시 섹션 형식.
@@ -238,7 +245,8 @@ for module in modules:
 
 #### Phase 6c: 4시간 모듈 통합 → writer-agent (module_integrate 모드)
 
-**발동**: 모듈 내 모든 차시가 6a+6b 통과 후 자동
+**사전조건 [MANDATORY]**: 해당 모듈의 모든 차시 세션 파일(`06_sessions/06_session_{NNN}.md`)이 존재해야 한다. 파일이 하나라도 누락되면 6c를 실행하지 않고 누락 차시의 6a를 먼저 실행한다.
+**발동**: 사전조건 충족 + 모듈 내 모든 차시가 6a+6b 통과 후 자동
 **작업**: (1) 차시 병합 (2) 일관성 패치(용어, 전환 멘트, tone_examples) (3) Synthesizer 삽입(모듈 말미 종합 요약) (4) Running Summary 모듈 수준 리셋
 **산출물**: `{output_dir}/06_modules/06_module_{NN}.md`
 
